@@ -1,0 +1,54 @@
+import Link from "next/link";
+import { LockKeyhole, Mail, ShieldCheck } from "lucide-react";
+
+export default function RealtorLoginPage() {
+  return (
+    <main className="realtor-login-page">
+      <section className="realtor-login-shell reveal">
+        <div className="realtor-login-brand">
+          <Link href="/" className="font-display text-3xl font-black uppercase leading-[0.9]">
+            Meridian
+            <br />
+            CMS
+          </Link>
+          <p>Realtor-managed catalog access</p>
+        </div>
+
+        <div className="realtor-login-panel">
+          <p className="realtor-login-eyebrow">Realtor portal</p>
+          <h1>Sign in to manage your catalog</h1>
+          <p className="realtor-login-copy">
+            Use the account provided by the platform owner. Public visitors do not need accounts.
+          </p>
+
+          <form className="realtor-login-form">
+            <label>
+              <span>Email address</span>
+              <div>
+                <Mail aria-hidden="true" className="h-4 w-4" />
+                <input autoComplete="email" placeholder="realtor@example.com" type="email" />
+              </div>
+            </label>
+
+            <label>
+              <span>Password</span>
+              <div>
+                <LockKeyhole aria-hidden="true" className="h-4 w-4" />
+                <input autoComplete="current-password" placeholder="Enter password" type="password" />
+              </div>
+            </label>
+
+            <Link className="realtor-login-submit" href="/realtor">
+              Sign in
+            </Link>
+          </form>
+
+          <div className="realtor-login-note">
+            <ShieldCheck aria-hidden="true" className="h-5 w-5" />
+            <p>No signup is available. Realtor accounts are issued by the platform owner.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  );
+}
