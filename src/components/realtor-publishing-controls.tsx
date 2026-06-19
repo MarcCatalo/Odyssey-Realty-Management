@@ -5,12 +5,14 @@ import { useState } from "react";
 type RealtorPublishingControlsProps = {
   defaultPublished?: boolean;
   draftLabel?: string;
+  inputName?: string;
   publishedLabel?: string;
 };
 
 export function RealtorPublishingControls({
   defaultPublished = false,
   draftLabel = "Save as draft after creation",
+  inputName,
   publishedLabel = "Published on public catalog"
 }: RealtorPublishingControlsProps) {
   const [saveAsDraft, setSaveAsDraft] = useState(!defaultPublished);
@@ -18,6 +20,9 @@ export function RealtorPublishingControls({
 
   return (
     <>
+      {inputName ? (
+        <input name={inputName} type="hidden" value={isPublished ? "published" : "draft"} />
+      ) : null}
       <label className="realtor-check-row">
         <input
           checked={saveAsDraft}

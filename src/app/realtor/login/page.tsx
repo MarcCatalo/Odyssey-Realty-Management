@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { LockKeyhole, Mail, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
+
+import { RealtorLoginForm } from "@/components/realtor-login-form";
 
 export default function RealtorLoginPage() {
   return (
@@ -21,27 +23,7 @@ export default function RealtorLoginPage() {
             Use the account provided by the platform owner. Public visitors do not need accounts.
           </p>
 
-          <form className="realtor-login-form">
-            <label>
-              <span>Email address</span>
-              <div>
-                <Mail aria-hidden="true" className="h-4 w-4" />
-                <input autoComplete="email" placeholder="realtor@example.com" type="email" />
-              </div>
-            </label>
-
-            <label>
-              <span>Password</span>
-              <div>
-                <LockKeyhole aria-hidden="true" className="h-4 w-4" />
-                <input autoComplete="current-password" placeholder="Enter password" type="password" />
-              </div>
-            </label>
-
-            <Link className="realtor-login-submit" href="/realtor">
-              Sign in
-            </Link>
-          </form>
+          <RealtorLoginForm />
 
           <div className="realtor-login-note">
             <ShieldCheck aria-hidden="true" className="h-5 w-5" />

@@ -5,13 +5,13 @@ import { usePathname } from "next/navigation";
 import {
   ExternalLink,
   Home,
-  LogOut,
   Mail,
   Menu,
   UserRound,
   UsersRound
 } from "lucide-react";
 
+import { RealtorLogoutButton } from "@/components/realtor-logout-button";
 import { cn } from "@/lib/utils";
 
 type RealtorShellProps = {
@@ -131,10 +131,7 @@ function RealtorSidebar({ active }: { active: string }) {
       </nav>
 
       <footer className="border-t-[3px] border-canopy bg-white p-6">
-        <Link className="sidebar-agent-link" href="/realtor/login">
-          <LogOut aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
-          Sign out
-        </Link>
+        <RealtorLogoutButton />
       </footer>
     </div>
   );

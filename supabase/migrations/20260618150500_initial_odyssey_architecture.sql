@@ -108,6 +108,9 @@ create table public.realtor_subscriptions (
   developer_limit_override integer check (developer_limit_override is null or developer_limit_override >= 0),
   project_limit_override integer check (project_limit_override is null or project_limit_override >= 0),
   project_image_limit_override integer check (project_image_limit_override is null or project_image_limit_override >= 0),
+  first_login_code_hash text,
+  first_login_code_created_at timestamptz,
+  first_login_verified_at timestamptz,
   starts_at timestamptz not null default now(),
   ends_at timestamptz,
   notes text,
@@ -312,6 +315,9 @@ create index realtors_created_by_owner_idx on public.realtors(created_by_owner_i
 create index realtors_profile_photo_asset_idx on public.realtors(profile_photo_asset_id);
 create index realtor_subscriptions_realtor_idx on public.realtor_subscriptions(realtor_id);
 create index realtor_subscriptions_plan_idx on public.realtor_subscriptions(plan_id);
+create index realtor_subscriptions_first_login_idx
+  on public.realtor_subscriptions(realtor_id, first_login_verified_at)
+  where status in ('trial', 'active', 'past_due');
 create index developers_logo_asset_idx on public.developers(logo_asset_id);
 create index developers_realtor_status_idx on public.developers(realtor_id, publication_status, sort_order);
 create index developers_realtor_slug_idx on public.developers(realtor_id, slug);

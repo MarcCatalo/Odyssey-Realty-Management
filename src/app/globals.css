@@ -2037,7 +2037,7 @@ svg {
     font-weight: 900;
     min-width: 0;
     outline: none;
-    text-transform: uppercase;
+    text-transform: none;
   }
 
   .realtor-login-form input::placeholder {
@@ -2089,6 +2089,112 @@ svg {
     font-size: 0.75rem;
     font-weight: 900;
     line-height: 1.5;
+    text-transform: uppercase;
+  }
+
+  .realtor-login-code-overlay {
+    align-items: center;
+    background: color-mix(in srgb, theme("colors.canopy") 62%, transparent);
+    display: flex;
+    inset: 0;
+    justify-content: center;
+    padding: 1.5rem;
+    position: fixed;
+    z-index: 80;
+  }
+
+  .realtor-login-code-modal {
+    background: theme("colors.bone");
+    border: 3px solid theme("colors.canopy");
+    box-shadow: 10px 10px 0 theme("colors.canopy");
+    color: theme("colors.canopy");
+    display: grid;
+    gap: 1rem;
+    max-width: 30rem;
+    padding: 2rem;
+    position: relative;
+    width: min(100%, 30rem);
+  }
+
+  .realtor-login-code-close {
+    align-items: center;
+    background: white;
+    border: 3px solid theme("colors.canopy");
+    color: theme("colors.canopy");
+    display: inline-flex;
+    height: 2.75rem;
+    justify-content: center;
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+    transition:
+      background 150ms var(--ease-out-expo),
+      box-shadow 150ms var(--ease-out-expo),
+      transform 150ms var(--ease-out-expo);
+    width: 2.75rem;
+  }
+
+  .realtor-login-code-close:hover,
+  .realtor-login-code-close:focus-visible {
+    background: theme("colors.sprout");
+    box-shadow: 3px 3px 0 theme("colors.canopy");
+    transform: translate(-1px, -1px);
+  }
+
+  .realtor-login-code-eyebrow {
+    color: theme("colors.grove");
+    font-size: 0.6875rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .realtor-login-code-modal h2 {
+    color: theme("colors.canopy");
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 950;
+    letter-spacing: 0;
+    line-height: 0.95;
+    text-transform: uppercase;
+  }
+
+  .realtor-login-code-modal p {
+    color: theme("colors.canopy");
+    font-size: 0.9rem;
+    font-weight: 800;
+    line-height: 1.6;
+  }
+
+  .realtor-login-code-modal label > span {
+    color: theme("colors.canopy");
+    display: block;
+    font-size: 0.6875rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+  }
+
+  .realtor-login-code-modal label > div {
+    align-items: center;
+    background: white;
+    border: 3px solid theme("colors.canopy");
+    display: flex;
+    gap: 0.75rem;
+    min-height: 3.25rem;
+    padding: 0 1rem;
+  }
+
+  .realtor-login-code-modal input {
+    background: transparent;
+    border: 0;
+    color: theme("colors.canopy");
+    flex: 1;
+    font-size: 1rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    min-width: 0;
+    outline: none;
     text-transform: uppercase;
   }
 
