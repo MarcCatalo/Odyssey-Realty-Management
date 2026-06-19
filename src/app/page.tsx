@@ -28,11 +28,10 @@ export default function HomePage() {
       <section className="home-hero">
         <div className="home-hero-grid mx-auto max-w-7xl">
           <div className="home-hero-copy reveal">
-            <h1>Developer catalog</h1>
-            <p className="home-hero-kicker">Agent-curated. Not a marketplace.</p>
+            <h1>{salesAgent.headerMain}</h1>
+            <p className="home-hero-kicker">{salesAgent.headerPrimarySubheader}</p>
             <p className="home-hero-description">
-              Browse vetted developer partners, available project previews, house galleries, site
-              development plans, and sales-agent contact paths in one managed catalog.
+              {salesAgent.headerSecondarySubheader}
             </p>
           </div>
 

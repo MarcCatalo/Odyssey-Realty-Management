@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, ArrowLeft, Eye, Pencil, Save, Trash2 } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Eye, Pencil, Plus, Save, Trash2 } from "lucide-react";
 
+import { RealtorImageUpload } from "@/components/realtor-image-upload";
 import { RealtorProjectManagementCard } from "@/components/realtor-project-management-card";
 import type { Developer, Project } from "@/features/catalog/types";
 
@@ -21,6 +22,11 @@ export function RealtorDeveloperEditor({
   const [isEditing, setIsEditing] = useState(false);
   const [showSavedToast, setShowSavedToast] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const initials = developer.name
+    .split(" ")
+    .map((part) => part[0])
+    .slice(0, 2)
+    .join("");
 
   useEffect(() => {
     if (!showSavedToast) {
@@ -29,7 +35,7 @@ export function RealtorDeveloperEditor({
 
     const timeoutId = window.setTimeout(() => {
       setShowSavedToast(false);
-    }, 2200);
+    }, 4200);
 
     return () => window.clearTimeout(timeoutId);
   }, [showSavedToast]);
@@ -46,12 +52,6 @@ export function RealtorDeveloperEditor({
 
   return (
     <section className="realtor-dashboard-section scroll-reveal px-5 py-10 md:px-10">
-      {showSavedToast ? (
-        <div aria-live="polite" className="realtor-feedback-toast">
-          <span>Edits have been saved.</span>
-        </div>
-      ) : null}
-
       {showDeleteModal ? (
         <div className="realtor-confirm-overlay" role="presentation">
           <div
@@ -85,6 +85,11 @@ export function RealtorDeveloperEditor({
             Back to developers
           </Link>
           <div className="realtor-toolbar-actions">
+            {showSavedToast ? (
+              <div aria-live="polite" className="realtor-feedback-toast">
+                <span>Edits have been saved.</span>
+              </div>
+            ) : null}
             <Link className="realtor-text-button" href={`/developers/${developer.slug}`} target="_blank">
               <Eye aria-hidden="true" className="h-4 w-4" />
               Preview
@@ -126,10 +131,6 @@ export function RealtorDeveloperEditor({
                 <span>Primary coverage</span>
                 <input defaultValue={developer.coverage} readOnly={!isEditing} type="text" />
               </label>
-              <label className="realtor-field">
-                <span>Profile slug</span>
-                <input defaultValue={developer.slug} readOnly={!isEditing} type="text" />
-              </label>
             </div>
 
             <label className="realtor-field realtor-field-full">
@@ -140,15 +141,17 @@ export function RealtorDeveloperEditor({
 
           <aside className="realtor-form-panel reveal reveal-delay-1 scroll-reveal">
             <div className="realtor-section-heading realtor-form-heading">
-              <h2>Status</h2>
+              <h2>Publishing</h2>
               <span aria-hidden="true" />
             </div>
 
-            <div className="realtor-publish-box">
-              <Eye aria-hidden="true" className="h-7 w-7" />
-              <strong>Published profile</strong>
-              <p>The public developer profile is live and visible to buyers browsing this catalog.</p>
-            </div>
+            <RealtorImageUpload
+              description="Logo used on developer cards and the public developer profile."
+              disabled={!isEditing}
+              fallbackText={initials}
+              label="Developer logo"
+              variant="logo"
+            />
 
             <label className="realtor-check-row">
               <input defaultChecked={developer.status === "published"} disabled={!isEditing} type="checkbox" />
@@ -164,6 +167,17 @@ export function RealtorDeveloperEditor({
             <p>Available</p>
           </div>
           <div className="profile-projects-grid stagger-list">
+            <Link
+              className="realtor-add-card interactive-card reveal scroll-reveal"
+              href={`/realtor/projects/new?developer=${developer.slug}`}
+              prefetch
+            >
+              <span className="realtor-add-icon">
+                <Plus aria-hidden="true" className="h-12 w-12" />
+              </span>
+              <h3>Add new project</h3>
+              <p>Create a project profile under {developer.name}.</p>
+            </Link>
             {developerProjects.map((project) => (
               <RealtorProjectManagementCard
                 developerSlug={developer.slug}

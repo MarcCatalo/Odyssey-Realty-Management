@@ -1,5 +1,5 @@
-import Image from "next/image";
 import {
+  BadgeDollarSign,
   Building2,
   Calendar,
   ExternalLink,
@@ -7,20 +7,17 @@ import {
   Layers,
   MapPin,
   Maximize2,
-  Navigation,
-  Send,
-  ShieldCheck
+  Navigation
 } from "lucide-react";
 import { notFound } from "next/navigation";
 
 import { BreadcrumbBar } from "@/components/breadcrumb-bar";
-import { ContactActions } from "@/components/contact-actions";
+import { ProjectGalleryCarousel } from "@/components/project-gallery-carousel";
 import { salesAgent } from "@/features/catalog/data";
 import {
   getDeveloperBySlug,
   getProjectBySlugs,
   getProjectsForDeveloper,
-  getPublicContactForProject,
   getPublishedDevelopers
 } from "@/features/catalog/queries";
 
@@ -48,9 +45,8 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
     notFound();
   }
 
-  const salesContact = getPublicContactForProject(params.developerSlug, params.projectSlug);
   const gallery = project.gallery.length > 0 ? project.gallery : [project.coverImage];
-  const galleryImages = [project.coverImage, ...project.gallery].slice(0, 3);
+  const galleryImages = project.gallery.length > 0 ? [project.coverImage, ...gallery] : [project.coverImage];
   const compactLocation = project.location.split(",")[0] ?? project.location;
 
   return (
@@ -80,41 +76,24 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
 
       <section className="project-stat-strip">
         <div className="project-stat-grid mx-auto max-w-7xl">
-          <ProjectStat icon={Home} label="Total lots" value="34" />
-          <ProjectStat icon={Layers} label="Levels" value="2" />
-          <ProjectStat icon={Maximize2} label="Lot sizes" value="180-220 m²" />
-          <ProjectStat icon={Calendar} label="Completion" value={project.statusLabel ?? "Contact sales" } />
-          <ProjectStat icon={ShieldCheck} label="Approval" value="DA Approved" />
+          <ProjectStat icon={Home} label="Lots available" value={`${project.totalLotsAvailable ?? 0}`} />
+          <ProjectStat icon={Layers} label="Levels" value={project.levels ?? "Contact sales"} />
+          <ProjectStat icon={Maximize2} label="Lot sizes" value={project.lotSizeRange ?? "Contact sales"} />
+          <ProjectStat icon={Calendar} label="Completion" value={project.completionLabel ?? "Contact sales"} />
+          <ProjectStat icon={BadgeDollarSign} label="Price range" value={project.priceRange ?? "Contact sales"} />
         </div>
       </section>
 
       <section className="project-section scroll-reveal px-5 py-10 md:px-10">
         <div className="mx-auto max-w-7xl">
           <SectionHeading title="House gallery" tag="Exterior & interior" />
-          <div className="project-gallery-grid stagger-list">
-            {galleryImages.map((image) => (
-              <figure className="project-gallery-card interactive-card reveal scroll-reveal" key={image.id}>
-                <div className="relative aspect-[4/3] bg-grove">
-                  <Image
-                    alt={image.alt}
-                    className="card-media object-cover"
-                    fill
-                    sizes="(min-width: 768px) 50vw, 100vw"
-                    src={image.src}
-                  />
-                </div>
-                <figcaption className="border-t-[3px] border-canopy p-3 text-sm font-black">
-                  {image.caption}
-                </figcaption>
-              </figure>
-            ))}
-          </div>
+          <ProjectGalleryCarousel images={galleryImages} />
         </div>
       </section>
 
       <section className="project-section scroll-reveal border-t-[3px] border-canopy px-5 py-10 md:px-10">
         <div className="mx-auto max-w-7xl">
-          <SectionHeading title="Site development plan" tag="SDP" />
+          <SectionHeading title="Site development plan" />
           <div className="project-sdp-panel reveal">
             <div className="project-plan">
               <div className="project-plan-label">Site plan, {project.title}</div>
@@ -134,12 +113,12 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
             </div>
             <aside className="project-plan-details">
               <p className="project-detail-kicker">Plan details</p>
-              <PlanRow label="Total site area" value="6,240 m²" />
-              <PlanRow label="No. of lots" value="34" />
-              <PlanRow label="Road reserve" value="Included" />
-              <PlanRow label="Common zones" value="2" />
-              <PlanRow label="Zoning" value={project.projectType} />
-              <PlanRow label="Reference" value={project.sdpImage.caption} />
+              <PlanRow label="Total site area" value={project.totalSiteArea ?? "Contact sales"} />
+              <PlanRow label="No. of lots" value={`${project.totalLotsAvailable ?? 0}`} />
+              <PlanRow label="Road reserve" value={project.roadReserve ?? "Contact sales"} />
+              <PlanRow label="Common zones" value={project.commonZones ?? "Contact sales"} />
+              <PlanRow label="Zoning" value={project.zoning ?? project.projectType} />
+              <PlanRow label="Reference" value={project.sdpReference ?? project.sdpImage.caption} />
               <p className="project-plan-note">
                 SDP is provided for reference purposes. Contact agent for full plans and sales documentation.
               </p>
@@ -153,7 +132,7 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
           <SectionHeading title="Location" />
           <div className="project-location-grid">
             <div className="project-location-card reveal">
-              <h2>42 {project.title} Drive, {project.location}</h2>
+              <h2>{project.mapAddress ?? `42 ${project.title} Drive, ${project.location}`}</h2>
               <LocationItem icon={MapPin} label={project.location} />
               <LocationItem icon={Building2} label={`${compactLocation} station, 8 min walk`} />
               <LocationItem icon={Navigation} label={`${compactLocation} access, 5 min drive`} />
@@ -182,31 +161,22 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
         </div>
       </section>
 
-      <section className="project-section scroll-reveal border-t-[3px] border-canopy px-5 py-10 md:px-10">
-        <div className="mx-auto max-w-7xl">
-          <SectionHeading title="Contact for this project" />
-          <div className="project-contact-grid">
-            <div className="project-agent-panel reveal">
-              <p>Listing agent</p>
-              <h2>{salesAgent.name}</h2>
-              <span>{salesAgent.title}</span>
-              <div className="project-agent-divider" />
-              <ContactActions links={salesContact.links} />
-            </div>
-            <form className="project-enquiry-panel reveal reveal-delay-1">
-              <p>Send an enquiry</p>
-              <input aria-label="Your full name" placeholder="Your full name" />
-              <input aria-label="Your email address" placeholder="Your email address" />
-              <input aria-label="Your phone number" placeholder="Your phone number" />
-              <textarea aria-label="Message" placeholder={`I would like to know more about ${project.title}.`} />
-              <button type="button">
-                <Send aria-hidden="true" className="h-4 w-4" />
-                Send enquiry
-              </button>
-            </form>
+      <footer className="home-footer">
+        <div className="mx-auto flex max-w-7xl flex-col gap-6 px-5 py-10 md:flex-row md:items-center md:justify-between md:px-10">
+          <div>
+            <p>Listed agent</p>
+            <h2>{salesAgent.name}</h2>
+            <span>{salesAgent.title}</span>
+          </div>
+          <div className="home-footer-contact">
+            {salesAgent.contactLinks.map((link) => (
+              <a href={link.href} key={link.id} rel="noreferrer" target={link.href.startsWith("http") ? "_blank" : undefined}>
+                {link.value}
+              </a>
+            ))}
           </div>
         </div>
-      </section>
+      </footer>
     </>
   );
 }

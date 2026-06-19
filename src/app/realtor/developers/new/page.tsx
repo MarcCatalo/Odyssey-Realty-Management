@@ -3,19 +3,17 @@ import {
   ArrowLeft,
   Building2,
   CheckCircle2,
-  Globe,
-  Mail,
-  MapPin,
-  Phone,
-  Plus,
   Save
 } from "lucide-react";
+
+import { RealtorImageUpload } from "@/components/realtor-image-upload";
+import { RealtorPublishingControls } from "@/components/realtor-publishing-controls";
 
 const profileFields = [
   {
     label: "Developer name",
     placeholder: "Example: PrimeBuild Homes",
-    helper: "Shown as the developer profile title on the public catalog."
+    helper: "Shown as the developer profile title on the public catalog. The developer URL slug is generated automatically."
   },
   {
     label: "Specialty",
@@ -26,19 +24,7 @@ const profileFields = [
     label: "Primary coverage",
     placeholder: "Quezon City, Metro Manila",
     helper: "Use the main service area or project coverage."
-  },
-  {
-    label: "Public profile slug",
-    placeholder: "primebuild-homes",
-    helper: "Auto-generated later from the developer name, editable only before publishing."
   }
-];
-
-const contactFields = [
-  { label: "Developer email", icon: Mail, placeholder: "sales@developer.com" },
-  { label: "Phone number", icon: Phone, placeholder: "+63 900 000 0000" },
-  { label: "Website", icon: Globe, placeholder: "https://developer.com" },
-  { label: "Social page", icon: Plus, placeholder: "Facebook, Instagram, LinkedIn, or custom URL" }
 ];
 
 export default function NewDeveloperPage() {
@@ -58,8 +44,8 @@ export default function NewDeveloperPage() {
           <aside className="realtor-hero-aside reveal reveal-delay-1">
             <div className="realtor-status-card lift-card">
               <CheckCircle2 aria-hidden="true" className="h-8 w-8" />
-              <h2>Profile starts as draft</h2>
-              <p>Draft developers stay hidden from the public catalog until published.</p>
+              <h2>Choose visibility</h2>
+              <p>Save the developer as a draft or publish it directly to the public catalog.</p>
             </div>
           </aside>
         </div>
@@ -74,7 +60,7 @@ export default function NewDeveloperPage() {
             </Link>
             <button className="realtor-save-button" type="button">
               <Save aria-hidden="true" className="h-4 w-4" />
-              Save draft
+              Save
             </button>
           </div>
 
@@ -85,7 +71,7 @@ export default function NewDeveloperPage() {
                 <span aria-hidden="true" />
               </div>
 
-              <div className="realtor-field-grid">
+              <div className="realtor-field-grid realtor-field-grid-balanced">
                 {profileFields.map((field) => (
                   <label className="realtor-field" key={field.label}>
                     <span>{field.label}</span>
@@ -95,7 +81,7 @@ export default function NewDeveloperPage() {
                 ))}
               </div>
 
-              <label className="realtor-field realtor-field-full">
+              <label className="realtor-field realtor-field-full realtor-field-description">
                 <span>Developer description</span>
                 <textarea
                   placeholder="Describe the developer's positioning, project strengths, and public buyer-facing notes."
@@ -105,7 +91,7 @@ export default function NewDeveloperPage() {
               </label>
             </section>
 
-            <aside className="realtor-form-panel reveal reveal-delay-1 scroll-reveal">
+            <aside className="realtor-form-panel realtor-publishing-panel reveal reveal-delay-1 scroll-reveal">
               <div className="realtor-section-heading realtor-form-heading">
                 <h2>Publishing</h2>
                 <span aria-hidden="true" />
@@ -117,67 +103,16 @@ export default function NewDeveloperPage() {
                 <p>This account can publish 6 more developer profiles under the current plan.</p>
               </div>
 
-              <label className="realtor-check-row">
-                <input defaultChecked type="checkbox" />
-                <span>Save as draft after creation</span>
-              </label>
-              <label className="realtor-check-row">
-                <input type="checkbox" />
-                <span>Mark as ready for review</span>
-              </label>
+              <RealtorImageUpload
+                description="Logo used on developer cards and the public developer profile."
+                fallbackText="Logo"
+                label="Developer logo"
+                variant="logo"
+              />
+
+              <RealtorPublishingControls />
             </aside>
 
-            <section className="realtor-form-panel reveal scroll-reveal">
-              <div className="realtor-section-heading realtor-form-heading">
-                <h2>Developer contact</h2>
-                <span aria-hidden="true" />
-              </div>
-
-              <p className="realtor-form-note">
-                These are developer-specific contact details. Public project enquiries still default to
-                the realtor contact unless a developer surface needs its own reference.
-              </p>
-
-              <div className="realtor-field-grid">
-                {contactFields.map((field) => {
-                  const Icon = field.icon;
-
-                  return (
-                    <label className="realtor-field" key={field.label}>
-                      <span>{field.label}</span>
-                      <div className="realtor-input-with-icon">
-                        <Icon aria-hidden="true" className="h-4 w-4" />
-                        <input placeholder={field.placeholder} type="text" />
-                      </div>
-                    </label>
-                  );
-                })}
-              </div>
-            </section>
-
-            <section className="realtor-form-panel reveal reveal-delay-1 scroll-reveal">
-              <div className="realtor-section-heading realtor-form-heading">
-                <h2>First project notes</h2>
-                <span aria-hidden="true" />
-              </div>
-
-              <label className="realtor-field realtor-field-full">
-                <span>Internal setup notes</span>
-                <textarea
-                  placeholder="Optional: record what project pages or gallery assets need to be added next."
-                  rows={7}
-                />
-              </label>
-
-              <div className="realtor-next-step-card">
-                <MapPin aria-hidden="true" className="h-6 w-6" />
-                <strong>Projects come next</strong>
-                <p>
-                  After saving the developer, the manage developer page will provide the add new project
-                  card and project-specific gallery, SDP, and location fields.
-                </p>
-              </div>
-            </section>
           </form>
         </div>
       </section>

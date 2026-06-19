@@ -3,13 +3,15 @@
 @tailwind utilities;
 
 :root {
-  --font-body: "Arial", sans-serif;
+  --font-body: "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-display: "Arial Black", "Arial", sans-serif;
   --color-bone: #f6f5f2;
   --color-field: #8f8e7f;
   --color-sprout: #8fb135;
   --color-grove: #487531;
   --color-canopy: #1d3215;
+  --radius-soft: 0.45rem;
+  --radius-control: 0.35rem;
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
 }
@@ -44,17 +46,24 @@ a {
   color: var(--color-canopy);
 }
 
+svg {
+  flex-shrink: 0;
+}
+
 @layer components {
   .brutal-panel {
     border: 3px solid theme("colors.canopy");
+    border-radius: var(--radius-soft);
     background: theme("colors.bone");
     box-shadow: 6px 6px 0 theme("colors.canopy");
   }
 
   .card-panel {
     border: 3px solid theme("colors.canopy");
+    border-radius: var(--radius-soft);
     background: white;
     box-shadow: none;
+    overflow: hidden;
   }
 
   .breadcrumb-bar {
@@ -507,6 +516,107 @@ a {
     color: theme("colors.sprout");
     font-size: 0.9375rem;
     font-weight: 900;
+  }
+
+  .contact-profile-panel {
+    background: white;
+    border: 3px solid theme("colors.canopy");
+    display: grid;
+    gap: 1.5rem;
+    padding: 1.25rem;
+  }
+
+  .contact-profile-card {
+    align-items: center;
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .contact-profile-photo {
+    align-items: center;
+    aspect-ratio: 1;
+    background: theme("colors.sprout");
+    border: 3px solid theme("colors.canopy");
+    color: theme("colors.canopy");
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    justify-content: center;
+    max-width: 9rem;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+  }
+
+  .contact-profile-photo strong {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 900;
+    line-height: 1;
+  }
+
+  .contact-profile-card p:first-child,
+  .contact-profile-socials p {
+    color: theme("colors.grove");
+    font-size: 0.6875rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .contact-profile-card h2 {
+    color: theme("colors.canopy");
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 900;
+    line-height: 1;
+    margin-top: 0.65rem;
+    text-transform: uppercase;
+  }
+
+  .contact-profile-card span {
+    color: theme("colors.canopy");
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 900;
+    margin-top: 0.55rem;
+    text-transform: uppercase;
+  }
+
+  .contact-profile-summary {
+    color: theme("colors.canopy");
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.7;
+    margin-top: 1rem;
+    max-width: 52rem;
+  }
+
+  .contact-profile-details {
+    border-top: 3px solid theme("colors.canopy");
+    display: grid;
+    gap: 1rem;
+    padding-top: 1.25rem;
+  }
+
+  .contact-profile-socials {
+    display: grid;
+    gap: 0.65rem;
+  }
+
+  .contact-profile-socials a {
+    align-items: center;
+    color: theme("colors.canopy");
+    display: inline-flex;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 900;
+  }
+
+  .contact-profile-socials a:hover,
+  .contact-profile-socials a:focus-visible {
+    color: theme("colors.grove");
+    transform: translateX(2px);
   }
 
   .page-hero {
@@ -1243,8 +1353,13 @@ a {
 
   .project-stat-icon {
     color: theme("colors.sprout");
+    flex: 0 0 1.75rem;
     height: 1.75rem;
     width: 1.75rem;
+  }
+
+  .project-stat-item > div {
+    min-width: 0;
   }
 
   .project-stat-value {
@@ -1310,6 +1425,162 @@ a {
     border: 3px solid theme("colors.canopy");
     box-shadow: none;
     overflow: hidden;
+  }
+
+  .project-gallery-carousel {
+    display: grid;
+    gap: 1.25rem;
+    min-height: 19rem;
+    overflow: hidden;
+    position: relative;
+    z-index: 5;
+  }
+
+  .project-gallery-expanded-caption button {
+    align-items: center;
+    background: theme("colors.sprout");
+    border: 3px solid theme("colors.canopy");
+    color: theme("colors.canopy");
+    cursor: pointer;
+    display: inline-flex;
+    gap: 0.45rem;
+    justify-content: center;
+    min-height: 2.5rem;
+    min-width: 2.5rem;
+    padding: 0.55rem 0.75rem;
+    text-transform: uppercase;
+    font-size: 0.6875rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    transition:
+      background 150ms var(--ease-out-expo),
+      box-shadow 150ms var(--ease-out-expo),
+      transform 150ms var(--ease-out-expo);
+  }
+
+  .project-gallery-expanded-caption button:hover,
+  .project-gallery-expanded-caption button:focus-visible {
+    background: theme("colors.bone");
+    box-shadow: 4px 4px 0 theme("colors.canopy");
+    transform: translate(-2px, -2px);
+  }
+
+  .project-gallery-track {
+    display: grid;
+    gap: 1.25rem;
+    grid-auto-columns: calc((100% - 1rem - 3.75rem) / 4);
+    grid-auto-flow: column;
+    overscroll-behavior: contain;
+    overflow-x: auto;
+    padding: 1rem 0 1.35rem 1rem;
+    scroll-behavior: smooth;
+    scroll-padding-left: 1rem;
+    scroll-snap-type: x mandatory;
+    touch-action: pan-x;
+  }
+
+  .project-gallery-track::-webkit-scrollbar {
+    height: 0.55rem;
+  }
+
+  .project-gallery-track::-webkit-scrollbar-track {
+    background: rgb(29 50 21 / 10%);
+  }
+
+  .project-gallery-track::-webkit-scrollbar-thumb {
+    background: theme("colors.canopy");
+  }
+
+  .project-gallery-slide {
+    background: white;
+    border: 3px solid theme("colors.canopy");
+    box-shadow: none;
+    color: theme("colors.canopy");
+    cursor: pointer;
+    display: grid;
+    min-width: 0;
+    overflow: hidden;
+    padding: 0;
+    scroll-snap-align: start;
+    text-align: left;
+  }
+
+  .project-gallery-image {
+    aspect-ratio: 4 / 3;
+    background: theme("colors.grove");
+    display: block;
+    position: relative;
+  }
+
+  .project-gallery-caption {
+    border-top: 3px solid theme("colors.canopy");
+    color: theme("colors.canopy");
+    display: block;
+    font-size: 0.9375rem;
+    font-weight: 900;
+    line-height: 1.3;
+    padding: 0.9rem 1rem;
+  }
+
+  .project-gallery-inspector {
+    align-items: center;
+    background: transparent;
+    display: flex;
+    inset: 0;
+    justify-content: center;
+    padding: 4.5rem 1.25rem 1.25rem;
+    position: fixed;
+    z-index: 1000;
+  }
+
+  .project-gallery-expanded {
+    animation: project-gallery-inspect-in 220ms var(--ease-out-expo) both;
+    background: white;
+    border: 3px solid theme("colors.canopy");
+    display: grid;
+    box-shadow: 8px 8px 0 rgb(29 50 21 / 22%);
+    max-height: calc(100vh - 7rem);
+    max-width: min(60rem, 100%);
+    overflow: hidden;
+    width: min(56rem, 100%);
+  }
+
+  .project-gallery-inspector-closing .project-gallery-expanded {
+    animation: project-gallery-inspect-out 180ms var(--ease-out-expo) both;
+  }
+
+  .project-gallery-expanded-image {
+    aspect-ratio: 16 / 9;
+    background: theme("colors.grove");
+    min-height: 0;
+    position: relative;
+  }
+
+  .project-gallery-expanded-caption {
+    align-items: center;
+    border-top: 3px solid theme("colors.canopy");
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: space-between;
+    padding: 1rem;
+  }
+
+  .project-gallery-expanded-caption span {
+    color: theme("colors.grove");
+    display: block;
+    font-size: 0.625rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .project-gallery-expanded-caption strong {
+    color: theme("colors.canopy");
+    display: block;
+    font-size: 1rem;
+    font-weight: 900;
+    margin-top: 0.35rem;
   }
 
   .project-sdp-panel {
@@ -1476,6 +1747,7 @@ a {
   .project-location-item svg {
     border: 2px solid theme("colors.sprout");
     color: theme("colors.sprout");
+    flex: 0 0 2rem;
     height: 2rem;
     padding: 0.35rem;
     width: 2rem;
@@ -2102,8 +2374,10 @@ a {
   .realtor-usage-track {
     background: theme("colors.bone");
     border: 2px solid theme("colors.canopy");
+    border-radius: var(--radius-control);
     height: 1rem;
     margin-top: 0.75rem;
+    overflow: hidden;
   }
 
   .realtor-usage-track span {
@@ -2120,6 +2394,7 @@ a {
 
   .realtor-activity-item {
     border: 2px solid theme("colors.canopy");
+    border-radius: var(--radius-soft);
     padding: 1rem;
   }
 
@@ -2153,10 +2428,12 @@ a {
   .realtor-form-panel {
     background: white;
     border: 3px solid theme("colors.canopy");
+    border-radius: var(--radius-soft);
     box-shadow: none;
   }
 
   .realtor-management-card {
+    background: theme("colors.canopy");
     display: flex;
     flex-direction: column;
     min-height: 100%;
@@ -2180,10 +2457,15 @@ a {
     padding: 1.25rem;
   }
 
+  .realtor-management-card .realtor-management-media {
+    margin: -1px -1px 0;
+  }
+
   .realtor-management-media span {
     align-items: center;
     background: theme("colors.grove");
     border: 3px solid theme("colors.bone");
+    border-radius: var(--radius-control);
     color: theme("colors.bone");
     display: flex;
     font-family: var(--font-display);
@@ -2198,6 +2480,7 @@ a {
     align-self: flex-start;
     background: theme("colors.sprout");
     border: 3px solid theme("colors.canopy");
+    border-radius: var(--radius-control);
     color: theme("colors.canopy");
     font-size: 0.625rem;
     font-weight: 900;
@@ -2207,6 +2490,7 @@ a {
   }
 
   .realtor-management-body {
+    background: white;
     flex: 1;
     padding: 1.25rem;
   }
@@ -2221,7 +2505,7 @@ a {
 
   .realtor-management-body h3 {
     color: theme("colors.canopy");
-    font-family: var(--font-display);
+    font-family: var(--font-body);
     font-size: 1.5rem;
     font-weight: 900;
     line-height: 1;
@@ -2250,21 +2534,34 @@ a {
   }
 
   .realtor-management-meta {
+    background: white;
     border-top: 3px solid theme("colors.canopy");
     display: grid;
     grid-template-columns: minmax(0, 1fr);
   }
 
   .realtor-management-meta div {
+    background: white;
     padding: 1rem 1.1rem;
   }
 
   .realtor-management-meta strong {
     color: theme("colors.canopy");
     display: block;
-    font-family: var(--font-display);
+    font-family: var(--font-body);
     font-size: 1.375rem;
+    font-weight: 900;
     line-height: 1;
+  }
+
+  .realtor-management-card {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: geometricPrecision;
+  }
+
+  .realtor-management-card :where(h3, p, span, strong, a, button) {
+    text-shadow: none;
+    -webkit-text-stroke: 0 transparent;
   }
 
   .realtor-management-meta span {
@@ -2278,6 +2575,7 @@ a {
   }
 
   .realtor-management-actions {
+    background: theme("colors.bone");
     border-top: 3px solid theme("colors.canopy");
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -2318,40 +2616,61 @@ a {
   }
 
   .realtor-add-card {
+    align-items: center;
     color: theme("colors.canopy");
     display: flex;
     flex-direction: column;
+    justify-content: center;
     min-height: 100%;
-    overflow: hidden;
-    padding: 1.25rem;
+    padding: 2.25rem 1.5rem;
+    text-align: center;
+    border-style: dashed;
+    border-color: theme("colors.field");
+    transition:
+      border-color 150ms var(--ease-out-expo),
+      box-shadow 150ms var(--ease-out-expo),
+      transform 150ms var(--ease-out-expo);
+  }
+
+  .realtor-add-card:hover,
+  .realtor-add-card:has(:focus-visible) {
+    border-color: theme("colors.sprout");
   }
 
   .realtor-add-icon {
     align-items: center;
-    background: theme("colors.sprout");
-    border: 3px solid theme("colors.canopy");
+    background: transparent;
+    border: 0;
+    color: theme("colors.field");
     display: flex;
-    height: 5rem;
+    height: 4rem;
     justify-content: center;
-    width: 5rem;
+    transition: color 150ms var(--ease-out-expo);
+    width: 4rem;
+  }
+
+  .realtor-add-card:hover .realtor-add-icon,
+  .realtor-add-card:has(:focus-visible) .realtor-add-icon {
+    color: theme("colors.sprout");
   }
 
   .realtor-add-card h3 {
     font-family: var(--font-display);
-    font-size: 1.5rem;
+    font-size: 1rem;
     font-weight: 900;
-    line-height: 1;
-    margin-top: 1.25rem;
+    line-height: 1.05;
+    margin-top: 0.4rem;
     text-transform: uppercase;
   }
 
   .realtor-add-card p {
-    color: theme("colors.canopy");
-    flex: 1;
-    font-size: 0.875rem;
+    color: theme("colors.grove");
+    font-size: 0.625rem;
     font-weight: 700;
-    line-height: 1.65;
-    margin: 0.85rem 0 1.25rem;
+    line-height: 1.35;
+    margin: 0.55rem auto 0;
+    max-width: 12rem;
+    text-transform: uppercase;
   }
 
   .realtor-form-toolbar {
@@ -2367,24 +2686,146 @@ a {
     display: flex;
     flex-wrap: wrap;
     gap: 0.75rem;
+    position: relative;
   }
 
-  .realtor-feedback-toast {
-    animation: realtor-toast-in 260ms var(--ease-out-expo), realtor-toast-out 420ms var(--ease-out-expo) 1760ms forwards;
+  .realtor-profile-editor-grid {
+    align-items: start;
+    display: grid;
+    gap: 1.75rem;
+  }
+
+  .realtor-form-grid-single {
+    display: block;
+  }
+
+  .realtor-profile-controls {
+    border-top: 3px solid theme("colors.canopy");
+    display: grid;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+  }
+
+  .realtor-publish-inline {
+    align-self: end;
+  }
+
+  .realtor-profile-photo-panel {
+    align-items: center;
     background: white;
     border: 3px solid theme("colors.canopy");
-    box-shadow: 6px 6px 0 rgb(29 50 21 / 18%);
+    color: theme("colors.canopy");
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.5rem;
+    text-align: center;
+  }
+
+  .realtor-profile-photo-panel h2 {
+    color: theme("colors.canopy");
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    font-weight: 900;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+
+  .realtor-profile-photo-panel p {
+    color: theme("colors.canopy");
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.5;
+    max-width: 13rem;
+  }
+
+  .realtor-profile-photo-panel input[type="file"] {
+    height: 1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    width: 1px;
+  }
+
+  .realtor-profile-photo-preview {
+    align-items: center;
+    aspect-ratio: 1;
+    background: theme("colors.grove");
+    border: 3px solid theme("colors.canopy");
+    color: theme("colors.bone");
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    justify-content: center;
+    max-width: 10.5rem;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+  }
+
+  .realtor-profile-photo-preview img {
+    height: 100%;
+    object-fit: cover;
+    width: 100%;
+  }
+
+  .realtor-profile-photo-preview strong {
+    color: theme("colors.bone");
+    font-family: var(--font-body);
+    font-size: 1.8rem;
+    font-weight: 900;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+
+  .realtor-subsection-divider {
+    align-items: center;
+    display: flex;
+    gap: 1rem;
+    margin: 1.75rem 0 1rem;
+  }
+
+  .realtor-subsection-divider h3 {
     color: theme("colors.canopy");
     font-size: 0.8125rem;
     font-weight: 900;
-    left: 50%;
-    letter-spacing: 0.04em;
-    padding: 1rem 1.15rem;
-    position: fixed;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 70;
+  }
+
+  .realtor-subsection-divider span {
+    background: theme("colors.canopy");
+    flex: 1;
+    height: 3px;
+  }
+
+  .realtor-feedback-toast {
+    align-items: center;
+    animation: realtor-toast-in 320ms var(--ease-out-expo), realtor-toast-out 900ms var(--ease-out-expo) 3300ms forwards;
+    background: #d8e9a8;
+    border: 3px solid theme("colors.canopy");
+    color: theme("colors.canopy");
+    display: inline-flex;
+    font-size: 0.8125rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    min-height: 3rem;
+    min-width: max-content;
+    padding: 0.75rem 1.25rem;
+    position: absolute;
+    right: calc(100% + 0.75rem);
+    text-transform: uppercase;
+    top: 0;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 1023px) {
+    .realtor-feedback-toast {
+      order: -1;
+      position: static;
+      width: 100%;
+    }
   }
 
   .realtor-confirm-overlay {
@@ -2401,6 +2842,7 @@ a {
   .realtor-confirm-modal {
     background: white;
     border: 3px solid theme("colors.canopy");
+    border-radius: var(--radius-soft);
     color: theme("colors.canopy");
     max-width: 32rem;
     padding: 1.5rem;
@@ -2434,6 +2876,7 @@ a {
   .realtor-save-button {
     align-items: center;
     border: 3px solid theme("colors.canopy");
+    border-radius: var(--radius-control);
     color: theme("colors.canopy");
     display: inline-flex;
     gap: 0.5rem;
@@ -2463,6 +2906,7 @@ a {
     align-items: center;
     background: #f7d9d7;
     border: 3px solid #8d1f19;
+    border-radius: var(--radius-control);
     color: #8d1f19;
     cursor: pointer;
     display: inline-flex;
@@ -2505,6 +2949,23 @@ a {
     padding: 1.65rem;
   }
 
+  .realtor-publishing-panel {
+    align-self: start;
+    display: grid;
+    gap: 1rem;
+  }
+
+  .realtor-publishing-panel .realtor-form-heading {
+    margin-bottom: 0.35rem;
+  }
+
+  .realtor-publishing-panel .realtor-publish-box,
+  .realtor-publishing-panel .realtor-upload-control,
+  .realtor-publishing-panel .realtor-check-row,
+  .realtor-publishing-panel .realtor-detail-stack {
+    margin-top: 0;
+  }
+
   .realtor-form-heading {
     margin-bottom: 1.5rem;
   }
@@ -2516,6 +2977,11 @@ a {
   .realtor-field-grid {
     display: grid;
     gap: 1.15rem 1rem;
+  }
+
+  .realtor-field-grid-balanced,
+  .realtor-field-grid-three {
+    align-items: start;
   }
 
   .realtor-field {
@@ -2533,6 +2999,7 @@ a {
   }
 
   .realtor-field input,
+  .realtor-field select,
   .realtor-field textarea {
     background: white;
     border: 3px solid theme("colors.canopy");
@@ -2551,6 +3018,7 @@ a {
   }
 
   .realtor-field input[readonly],
+  .realtor-field select:disabled,
   .realtor-field textarea[readonly],
   .realtor-input-with-icon input[readonly] {
     background: rgb(246 245 242 / 65%);
@@ -2564,6 +3032,52 @@ a {
     text-transform: none;
   }
 
+  .realtor-field select {
+    appearance: none;
+    cursor: pointer;
+    text-transform: uppercase;
+  }
+
+  .realtor-field-start {
+    margin-bottom: 1.2rem;
+  }
+
+  .realtor-field-contained {
+    background: theme("colors.bone");
+    border: 3px solid theme("colors.canopy");
+    margin-top: 0;
+    padding: 1rem;
+  }
+
+  .realtor-form-subsection {
+    margin-top: 1.8rem;
+  }
+
+  .realtor-form-subsection:first-of-type {
+    margin-top: 0;
+  }
+
+  .realtor-form-subsection .realtor-subsection-divider {
+    margin: 0 0 1.15rem;
+  }
+
+  .realtor-form-subsection .realtor-subsection-divider h3 {
+    background: theme("colors.bone");
+    border: 3px solid theme("colors.canopy");
+    color: theme("colors.canopy");
+    line-height: 1;
+    padding: 0.55rem 0.75rem;
+    white-space: nowrap;
+  }
+
+  .realtor-form-subsection .realtor-subsection-divider span {
+    height: 3px;
+  }
+
+  .realtor-field-grid-follow {
+    margin-top: 1.15rem;
+  }
+
   .realtor-field input::placeholder,
   .realtor-field textarea::placeholder {
     color: theme("colors.grove");
@@ -2571,6 +3085,7 @@ a {
   }
 
   .realtor-field input:focus,
+  .realtor-field select:focus,
   .realtor-field textarea:focus {
     box-shadow: 4px 4px 0 theme("colors.sprout");
   }
@@ -2618,6 +3133,707 @@ a {
     background: theme("colors.bone");
     border: 3px solid theme("colors.canopy");
     padding: 1.1rem 1.15rem;
+  }
+
+  .realtor-upload-control {
+    background: theme("colors.bone");
+    border: 3px solid theme("colors.canopy");
+    display: grid;
+    gap: 0.9rem;
+    grid-template-rows: auto 1fr auto;
+    padding: 1rem;
+  }
+
+  .realtor-upload-control + .realtor-publish-box {
+    margin-top: 1rem;
+  }
+
+  .realtor-upload-copy span {
+    color: theme("colors.canopy");
+    display: block;
+    font-size: 0.6875rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .realtor-upload-copy p,
+  .realtor-upload-note {
+    color: theme("colors.canopy");
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.55;
+    margin-top: 0.45rem;
+  }
+
+  .realtor-upload-preview {
+    align-self: start;
+    background: white;
+    border: 3px solid theme("colors.canopy");
+    display: grid;
+    min-height: 11rem;
+    overflow: hidden;
+  }
+
+  .realtor-upload-image-shell {
+    min-height: 11rem;
+    position: relative;
+  }
+
+  .realtor-upload-image-shell img {
+    height: 100%;
+    object-fit: cover;
+    width: 100%;
+  }
+
+  .realtor-upload-preview-logo {
+    aspect-ratio: 1;
+    max-width: 9.5rem;
+    min-height: auto;
+  }
+
+  .realtor-upload-preview-logo .realtor-upload-image-shell {
+    aspect-ratio: 1;
+    min-height: auto;
+  }
+
+  .realtor-upload-preview-gallery {
+    grid-template-columns: 1fr;
+  }
+
+  .realtor-upload-preview-gallery .realtor-upload-image-shell {
+    aspect-ratio: 4 / 3;
+    border-right: 3px solid theme("colors.canopy");
+    min-height: auto;
+  }
+
+  .realtor-upload-preview-manageable {
+    background: transparent;
+    border: 0;
+    gap: 0.85rem;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    min-height: auto;
+    overflow: visible;
+  }
+
+  .realtor-upload-preview-manageable .realtor-upload-image-shell {
+    aspect-ratio: 4 / 3;
+    border: 0;
+    min-height: auto;
+  }
+
+  .realtor-upload-fallback {
+    align-items: center;
+    background: theme("colors.grove");
+    color: theme("colors.bone");
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    justify-content: center;
+    min-height: 8rem;
+    padding: 1rem;
+    text-align: center;
+  }
+
+  .realtor-upload-preview-logo .realtor-upload-fallback {
+    min-height: 9rem;
+  }
+
+  .realtor-upload-fallback strong {
+    color: theme("colors.bone");
+    font-family: var(--font-body);
+    font-size: 1.65rem;
+    font-weight: 900;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+
+  .realtor-upload-actions {
+    align-items: center;
+    align-content: start;
+    display: grid;
+    gap: 0.65rem;
+    grid-template-columns: 1fr;
+    justify-items: start;
+    margin-top: 0.15rem;
+    min-height: 6.15rem;
+  }
+
+  .realtor-upload-actions input[type="file"] {
+    height: 1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    width: 1px;
+  }
+
+  .realtor-upload-button,
+  .realtor-upload-reset,
+  .realtor-upload-manage {
+    align-items: center;
+    border: 3px solid theme("colors.canopy");
+    cursor: pointer;
+    display: inline-flex;
+    gap: 0.5rem;
+    justify-content: center;
+    min-height: 2.75rem;
+    width: 11.25rem;
+    padding: 0.65rem 0.8rem;
+    text-transform: uppercase;
+    font-size: 0.6875rem;
+    font-weight: 900;
+    letter-spacing: 0.05em;
+    transition:
+      background 150ms var(--ease-out-expo),
+      box-shadow 150ms var(--ease-out-expo),
+      color 150ms var(--ease-out-expo),
+      transform 150ms var(--ease-out-expo);
+  }
+
+  .realtor-upload-button {
+    background: theme("colors.sprout");
+    color: theme("colors.canopy");
+  }
+
+  .realtor-upload-button[aria-disabled="true"] {
+    background: rgb(246 245 242 / 70%);
+    color: theme("colors.grove");
+    cursor: not-allowed;
+  }
+
+  .realtor-upload-reset {
+    background: white;
+    color: theme("colors.canopy");
+  }
+
+  .realtor-upload-manage {
+    background: theme("colors.canopy");
+    color: theme("colors.bone");
+  }
+
+  .realtor-upload-button:not([aria-disabled="true"]):hover,
+  .realtor-upload-button:not([aria-disabled="true"]):focus-visible,
+  .realtor-upload-reset:hover,
+  .realtor-upload-reset:focus-visible,
+  .realtor-upload-manage:hover:not(:disabled),
+  .realtor-upload-manage:focus-visible:not(:disabled) {
+    background: theme("colors.bone");
+    box-shadow: 4px 4px 0 theme("colors.canopy");
+    color: theme("colors.canopy");
+    transform: translate(-2px, -2px);
+  }
+
+  .realtor-upload-manage:disabled {
+    cursor: not-allowed;
+    opacity: 0.58;
+  }
+
+  .realtor-upload-grid {
+    align-items: stretch;
+    display: grid;
+    gap: 1rem;
+  }
+
+  .realtor-upload-grid > .realtor-upload-control {
+    height: 100%;
+  }
+
+  .realtor-media-gallery-card {
+    background: white;
+    border: 3px solid theme("colors.canopy");
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .realtor-media-gallery-meta {
+    border-top: 3px solid theme("colors.canopy");
+    display: grid;
+    gap: 0.65rem;
+    padding: 0.75rem;
+  }
+
+  .realtor-media-name-strip {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .realtor-media-gallery-meta span {
+    color: theme("colors.grove");
+    display: block;
+    font-size: 0.625rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .realtor-media-gallery-meta strong {
+    color: theme("colors.canopy");
+    display: block;
+    font-size: 0.95rem;
+    font-weight: 900;
+    line-height: 1.3;
+    min-height: auto;
+    overflow-wrap: anywhere;
+  }
+
+  .realtor-media-actions {
+    display: grid;
+    gap: 0.5rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .realtor-media-actions:has(button:only-child) {
+    grid-template-columns: 1fr;
+  }
+
+  .realtor-media-actions button {
+    align-items: center;
+    background: theme("colors.bone");
+    border: 3px solid theme("colors.canopy");
+    color: theme("colors.canopy");
+    cursor: pointer;
+    display: inline-flex;
+    gap: 0.35rem;
+    justify-content: center;
+    min-height: 2.45rem;
+    min-width: 0;
+    padding: 0.5rem 0.55rem;
+    text-transform: uppercase;
+    font-size: 0.625rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    transition:
+      background 150ms var(--ease-out-expo),
+      box-shadow 150ms var(--ease-out-expo),
+      transform 150ms var(--ease-out-expo);
+  }
+
+  .realtor-media-actions button:hover:not(:disabled),
+  .realtor-media-actions button:focus-visible:not(:disabled) {
+    background: white;
+    box-shadow: 3px 3px 0 theme("colors.canopy");
+    transform: translate(-1px, -1px);
+  }
+
+  .realtor-media-actions button:disabled {
+    cursor: not-allowed;
+    opacity: 0.58;
+  }
+
+  .realtor-media-actions .realtor-media-delete {
+    border-color: #8d1f19;
+    color: #8d1f19;
+  }
+
+  .realtor-media-manager-overlay {
+    align-items: center;
+    background: rgb(29 50 21 / 46%);
+    display: flex;
+    inset: 0;
+    justify-content: center;
+    padding: 1.5rem;
+    position: fixed;
+    transform: none;
+    z-index: 1000;
+  }
+
+  .realtor-media-manager {
+    animation: project-gallery-inspect-in 220ms var(--ease-out-expo) both;
+    background: theme("colors.bone");
+    border: 3px solid theme("colors.canopy");
+    box-shadow: 8px 8px 0 rgb(29 50 21 / 22%);
+    color: theme("colors.canopy");
+    display: grid;
+    gap: 1rem;
+    grid-template-rows: auto auto minmax(0, 1fr);
+    max-height: min(48rem, calc(100vh - 3rem));
+    max-width: min(72rem, 100%);
+    overflow: hidden;
+    padding: 1.25rem;
+    position: relative;
+    width: min(66rem, 100%);
+  }
+
+  .realtor-media-manager-header {
+    align-items: start;
+    border-bottom: 3px solid theme("colors.canopy");
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    padding-bottom: 1rem;
+  }
+
+  .realtor-media-manager-header span {
+    color: theme("colors.grove");
+    display: block;
+    font-size: 0.625rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .realtor-media-manager-header h2 {
+    color: theme("colors.canopy");
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    font-weight: 900;
+    line-height: 1;
+    margin-top: 0.35rem;
+    text-transform: uppercase;
+  }
+
+  .realtor-media-manager-header p {
+    color: theme("colors.canopy");
+    font-size: 0.8125rem;
+    font-weight: 800;
+    line-height: 1.5;
+    margin-top: 0.55rem;
+  }
+
+  .realtor-media-manager-header > button,
+  .realtor-media-manager-actions button {
+    align-items: center;
+    background: white;
+    border: 3px solid theme("colors.canopy");
+    color: theme("colors.canopy");
+    cursor: pointer;
+    display: inline-flex;
+    gap: 0.45rem;
+    justify-content: center;
+    min-height: 2.75rem;
+    padding: 0.65rem 0.8rem;
+    text-transform: uppercase;
+    font-size: 0.6875rem;
+    font-weight: 900;
+    letter-spacing: 0.05em;
+    transition:
+      background 150ms var(--ease-out-expo),
+      box-shadow 150ms var(--ease-out-expo),
+      color 150ms var(--ease-out-expo),
+      transform 150ms var(--ease-out-expo);
+  }
+
+  .realtor-media-manager-header > button {
+    min-width: 2.75rem;
+    padding: 0.65rem;
+  }
+
+  .realtor-media-manager-header > button:hover,
+  .realtor-media-manager-header > button:focus-visible,
+  .realtor-media-manager-actions button:hover:not(:disabled),
+  .realtor-media-manager-actions button:focus-visible:not(:disabled) {
+    background: theme("colors.sprout");
+    box-shadow: 4px 4px 0 theme("colors.canopy");
+    transform: translate(-2px, -2px);
+  }
+
+  .realtor-media-manager-actions {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+  }
+
+  .realtor-media-manager-actions .realtor-media-manager-action-active {
+    background: theme("colors.sprout");
+  }
+
+  .realtor-media-manager-actions .realtor-media-manager-danger {
+    background: #f7d9d7;
+    border-color: #8d1f19;
+    color: #8d1f19;
+  }
+
+  .realtor-media-manager-actions button:disabled {
+    cursor: not-allowed;
+    opacity: 0.58;
+  }
+
+  .realtor-media-manager-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+    max-height: min(34rem, calc(100vh - 14rem));
+    overflow: auto;
+    padding: 0.25rem 0.45rem 0.5rem 0.1rem;
+  }
+
+  .realtor-manager-photo-card {
+    background: white;
+    border: 3px solid theme("colors.canopy");
+    display: grid;
+    grid-template-rows: 13.75rem auto;
+    min-height: 23rem;
+    overflow: hidden;
+    position: relative;
+    transition:
+      box-shadow 170ms var(--ease-out-expo),
+      transform 170ms var(--ease-out-expo);
+  }
+
+  .realtor-manager-photo-card:hover {
+    box-shadow: 5px 5px 0 theme("colors.canopy");
+    transform: translate(-3px, -3px);
+  }
+
+  .realtor-manager-photo-card-selected {
+    box-shadow: 5px 5px 0 theme("colors.sprout");
+  }
+
+  .realtor-manager-photo-card-selected:hover {
+    box-shadow:
+      5px 5px 0 theme("colors.sprout"),
+      8px 8px 0 theme("colors.canopy");
+  }
+
+  .realtor-manager-photo-image {
+    background: theme("colors.grove");
+    border-bottom: 3px solid theme("colors.canopy");
+    min-height: 13.75rem;
+    position: relative;
+  }
+
+  .realtor-manager-photo-image img {
+    height: 100%;
+    object-fit: cover;
+    width: 100%;
+  }
+
+  .realtor-manager-photo-check {
+    align-items: center;
+    background: theme("colors.sprout");
+    border: 3px solid theme("colors.canopy");
+    color: theme("colors.canopy");
+    display: flex;
+    height: 1.75rem;
+    justify-content: center;
+    left: 0.75rem;
+    position: absolute;
+    top: 0.75rem;
+    width: 1.75rem;
+    z-index: 2;
+  }
+
+  .realtor-manager-photo-check input {
+    accent-color: theme("colors.canopy");
+    cursor: pointer;
+    height: 1.05rem;
+    width: 1.05rem;
+  }
+
+  .realtor-manager-photo-check-static {
+    pointer-events: none;
+  }
+
+  .realtor-manager-photo-meta {
+    background: white;
+    display: grid;
+    gap: 0.75rem;
+    grid-template-rows: 1fr auto;
+    padding: 0.85rem;
+  }
+
+  .realtor-manager-photo-copy {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .realtor-manager-photo-copy strong {
+    color: theme("colors.canopy");
+    display: block;
+    font-size: 1rem;
+    font-weight: 900;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+  }
+
+  .realtor-manager-photo-copy span {
+    color: theme("colors.grove");
+    display: block;
+    font-size: 0.625rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .realtor-manager-photo-copy input {
+    background: theme("colors.bone");
+    border: 3px solid theme("colors.canopy");
+    color: theme("colors.canopy");
+    font-size: 1rem;
+    font-weight: 900;
+    line-height: 1.3;
+    min-height: 2.75rem;
+    padding: 0.55rem 0.65rem;
+    width: 100%;
+  }
+
+  .realtor-manager-photo-actions {
+    display: grid;
+    gap: 0.55rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .realtor-manager-photo-actions:has(button:only-child) {
+    grid-template-columns: 1fr;
+  }
+
+  .realtor-manager-photo-actions button {
+    align-items: center;
+    background: theme("colors.bone");
+    border: 3px solid theme("colors.canopy");
+    color: theme("colors.canopy");
+    cursor: pointer;
+    display: inline-flex;
+    font-size: 0.625rem;
+    font-weight: 900;
+    gap: 0.35rem;
+    justify-content: center;
+    letter-spacing: 0.04em;
+    min-height: 2.55rem;
+    min-width: 0;
+    padding: 0.55rem 0.6rem;
+    text-transform: uppercase;
+    transition:
+      background 150ms var(--ease-out-expo),
+      box-shadow 150ms var(--ease-out-expo),
+      transform 150ms var(--ease-out-expo);
+  }
+
+  .realtor-manager-photo-actions button:hover:not(:disabled),
+  .realtor-manager-photo-actions button:focus-visible:not(:disabled) {
+    background: white;
+    box-shadow: 3px 3px 0 theme("colors.canopy");
+    transform: translate(-1px, -1px);
+  }
+
+  .realtor-manager-photo-actions button:disabled {
+    cursor: not-allowed;
+    opacity: 0.58;
+  }
+
+  .realtor-manager-photo-actions .realtor-media-delete {
+    background: #f7d9d7;
+    border-color: #8d1f19;
+    color: #8d1f19;
+  }
+
+  .realtor-media-delete-confirm {
+    align-items: center;
+    background: rgb(29 50 21 / 28%);
+    display: flex;
+    inset: 0;
+    justify-content: center;
+    padding: 1rem;
+    position: absolute;
+    z-index: 2;
+  }
+
+  .realtor-header-preview {
+    background: theme("colors.canopy");
+    border: 3px solid theme("colors.canopy");
+    color: theme("colors.bone");
+    margin-top: 1rem;
+    padding: 1.25rem;
+  }
+
+  .realtor-header-preview p {
+    color: theme("colors.sprout");
+    font-size: 0.625rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .realtor-header-preview strong {
+    color: theme("colors.bone");
+    display: block;
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    font-weight: 900;
+    line-height: 0.9;
+    margin-top: 0.8rem;
+    text-transform: uppercase;
+  }
+
+  .realtor-header-preview em {
+    color: theme("colors.sprout");
+    display: block;
+    font-size: 0.875rem;
+    font-style: normal;
+    font-weight: 900;
+    letter-spacing: 0.28em;
+    line-height: 1.35;
+    margin-top: 1rem;
+    text-transform: uppercase;
+  }
+
+  .realtor-header-preview small {
+    color: theme("colors.bone");
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 800;
+    line-height: 1.65;
+    margin-top: 1rem;
+    max-width: 38rem;
+  }
+
+  .realtor-header-preview span {
+    color: theme("colors.sprout");
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 900;
+    margin-top: 1rem;
+  }
+
+  .realtor-social-list,
+  .realtor-contact-hints {
+    display: grid;
+    gap: 0.85rem;
+  }
+
+  .realtor-social-field {
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  .realtor-social-field span {
+    align-items: center;
+    color: theme("colors.canopy");
+    display: inline-flex;
+    gap: 0.45rem;
+    font-size: 0.6875rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .realtor-social-field input {
+    background: white;
+    border: 3px solid theme("colors.canopy");
+    color: theme("colors.canopy");
+    font-size: 0.875rem;
+    font-weight: 900;
+    min-height: 3rem;
+    padding: 0.8rem 1rem;
+  }
+
+  .realtor-contact-hints {
+    border-top: 3px solid theme("colors.canopy");
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+  }
+
+  .realtor-contact-hints p {
+    align-items: flex-start;
+    color: theme("colors.canopy");
+    display: flex;
+    gap: 0.6rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+    line-height: 1.5;
   }
 
   .realtor-projects-section {
@@ -2701,6 +3917,22 @@ a {
 
     .home-footer-contact {
       justify-items: end;
+    }
+
+    .contact-profile-card {
+      grid-template-columns: 9rem minmax(0, 1fr);
+    }
+
+    .contact-profile-details {
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    }
+
+    .realtor-profile-editor-grid {
+      grid-template-columns: minmax(13rem, 0.28fr) minmax(0, 1fr);
+    }
+
+    .realtor-profile-header-panel {
+      grid-column: 1 / -1;
     }
 
     .page-hero,
@@ -2835,8 +4067,32 @@ a {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
+    .realtor-field-grid-three {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .realtor-upload-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
     .realtor-field-full {
       grid-column: 1 / -1;
+    }
+  }
+
+  @media (max-width: 1179px) {
+    .project-gallery-track {
+      grid-auto-columns: calc((100% - 1rem - 1.25rem) / 2);
+    }
+  }
+
+  @media (max-width: 639px) {
+    .project-gallery-track {
+      grid-auto-columns: calc(100% - 1rem);
+    }
+
+    .project-gallery-inspector {
+      padding: 1rem;
     }
   }
 
@@ -2849,8 +4105,20 @@ a {
       grid-template-columns: minmax(0, 1fr) minmax(19rem, 0.36fr);
     }
 
+    .realtor-form-grid-single {
+      display: block;
+    }
+
+    .realtor-profile-controls {
+      grid-template-columns: minmax(12rem, 15rem) minmax(16rem, 1fr);
+    }
+
     .realtor-form-grid > .realtor-form-panel:nth-child(3) {
       grid-column: 1 / 2;
+    }
+
+    .realtor-form-grid > .realtor-media-panel {
+      grid-column: 1 / -1;
     }
   }
 
@@ -3160,6 +4428,126 @@ a {
     transform: translate(-1px, -1px);
   }
 
+  :where(
+      .home-action-primary,
+      .home-action-secondary,
+      .home-trust-card,
+      .home-count-card,
+      .section-action-link,
+      .home-developer-card,
+      .public-developer-card,
+      .home-footer-contact,
+      .profile-action-primary,
+      .profile-action-secondary,
+      .profile-detail-panel,
+      .developer-project-card,
+      .profile-info-tile,
+      .profile-contact-panel,
+      .profile-cover-card,
+      .project-action-primary,
+      .project-action-secondary,
+      .project-action-tertiary,
+      .project-gallery-card,
+      .project-gallery-slide,
+      .project-gallery-expanded,
+      .project-gallery-inspector,
+      .project-sdp-panel,
+      .project-plan,
+      .project-plan-note,
+      .project-location-card,
+      .project-map-button,
+      .project-map-card,
+      .project-agent-panel,
+      .project-enquiry-panel,
+      .project-enquiry-panel input,
+      .project-enquiry-panel textarea,
+      .project-enquiry-panel button,
+      .realtor-login-panel,
+      .realtor-preview-button,
+      .realtor-status-card,
+      .realtor-action-card,
+      .realtor-panel,
+      .realtor-profile-photo-panel,
+      .realtor-profile-photo-preview,
+      .realtor-management-card,
+      .realtor-add-card,
+      .realtor-form-panel,
+      .realtor-feedback-toast,
+      .realtor-confirm-modal,
+      .realtor-media-manager,
+      .realtor-text-button,
+      .realtor-save-button,
+      .realtor-danger-button,
+      .realtor-field input,
+      .realtor-field textarea,
+      .realtor-input-with-icon,
+      .realtor-publish-box,
+      .realtor-next-step-card,
+      .realtor-upload-control,
+      .realtor-upload-preview,
+      .realtor-media-gallery-card,
+      .realtor-manager-photo-card,
+      .realtor-upload-button,
+      .realtor-upload-reset,
+      .realtor-upload-manage,
+      .brutal-button,
+      .sidebar-mini-button,
+      .sidebar-contact-link,
+      .chip-action
+    ) {
+    border-radius: var(--radius-soft);
+  }
+
+  :where(
+      .home-action-primary,
+      .home-action-secondary,
+      .section-action-link,
+      .profile-action-primary,
+      .profile-action-secondary,
+      .project-action-primary,
+      .project-action-secondary,
+      .project-action-tertiary,
+      .project-map-button,
+      .project-gallery-expanded-caption button,
+      .project-enquiry-panel button,
+      .realtor-preview-button,
+      .realtor-text-button,
+      .realtor-save-button,
+      .realtor-danger-button,
+      .realtor-media-manager-header > button,
+      .realtor-media-manager-actions button,
+      .realtor-manager-photo-actions button,
+      .realtor-manager-photo-copy input,
+      .realtor-form-subsection .realtor-subsection-divider h3,
+      .brutal-button,
+      .sidebar-mini-button,
+      .chip-action
+  ) {
+    border-radius: var(--radius-control);
+  }
+
+  :where(
+      .profile-stat-item,
+      .project-stat-item,
+      .realtor-stat-item,
+      .public-developer-card-media,
+      .public-developer-card-footer,
+      .developer-project-media,
+      .developer-project-footer,
+      .project-card-footer,
+      .realtor-management-media,
+      .realtor-management-meta,
+      .realtor-management-actions,
+      .realtor-management-actions a,
+      .realtor-management-actions button,
+      .realtor-action-footer,
+      .project-plan-label,
+      .project-plan-lot,
+      .project-location-item
+    ) {
+    border-radius: 0;
+  }
+
   .interactive-card {
     will-change: transform;
     transform: translate(0, 0);
@@ -3280,27 +4668,51 @@ a {
   }
 }
 
-@keyframes realtor-toast-in {
+@keyframes project-gallery-inspect-in {
   from {
     opacity: 0;
-    transform: translate(-50%, calc(-50% + 10px));
+    transform: scale(0.92) translateY(12px);
   }
 
   to {
     opacity: 1;
-    transform: translate(-50%, -50%);
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes project-gallery-inspect-out {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(0.92) translateY(10px);
+  }
+}
+
+@keyframes realtor-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
 @keyframes realtor-toast-out {
   from {
     opacity: 1;
-    transform: translate(-50%, -50%);
+    transform: translateY(0);
   }
 
   to {
     opacity: 0;
-    transform: translate(-50%, calc(-50% - 8px));
+    transform: translateY(-4px);
   }
 }
 

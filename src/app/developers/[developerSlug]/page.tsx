@@ -2,18 +2,13 @@ import { notFound } from "next/navigation";
 import {
   Building2,
   Calendar,
-  ExternalLink,
-  Mail,
   MapPin,
-  MessageCircle,
-  Phone,
   ShieldCheck
 } from "lucide-react";
 
 import { BreadcrumbBar } from "@/components/breadcrumb-bar";
 import { ContactActions } from "@/components/contact-actions";
 import { DeveloperProjectCard } from "@/components/developer-project-card";
-import { salesAgent } from "@/features/catalog/data";
 import {
   getDeveloperBySlug,
   getDeveloperContact,
@@ -42,8 +37,6 @@ export default function DeveloperProfilePage({ params }: DeveloperProfilePagePro
 
   const projects = getProjectsForDeveloper(params.developerSlug);
   const developerContact = getDeveloperContact(params.developerSlug);
-  const phoneLink = salesAgent.contactLinks.find((link) => link.type === "phone");
-  const emailLink = salesAgent.contactLinks.find((link) => link.type === "email");
   const heroCategory = developer.specialty.toLowerCase().includes("house")
     ? "Residential developer"
     : developer.specialty;
@@ -76,28 +69,6 @@ export default function DeveloperProfilePage({ params }: DeveloperProfilePagePro
             </div>
             <p className="profile-description">{developer.description}</p>
           </div>
-
-            <aside className="profile-template-actions reveal reveal-delay-1">
-              <div className="profile-action-row">
-                {emailLink ? (
-                  <a className="profile-action-primary" href={emailLink.href}>
-                    <Mail aria-hidden="true" className="h-4 w-4" />
-                    Contact agent
-                  </a>
-                ) : null}
-                {phoneLink ? (
-                  <a className="profile-action-secondary" href={phoneLink.href}>
-                    <Phone aria-hidden="true" className="h-4 w-4" />
-                    Call agent
-                  </a>
-                ) : null}
-              </div>
-              <div className="profile-social-row">
-                <span>@{developer.slug.replace(/-/g, "_").toUpperCase()}</span>
-                <MessageCircle aria-hidden="true" className="h-4 w-4" />
-                <ExternalLink aria-hidden="true" className="h-4 w-4" />
-              </div>
-            </aside>
           </div>
         </div>
       </section>
@@ -148,9 +119,8 @@ export default function DeveloperProfilePage({ params }: DeveloperProfilePagePro
       <section className="profile-projects-section scroll-reveal px-5 py-10 md:px-10">
         <div className="mx-auto max-w-7xl">
           <div className="profile-projects-heading">
-            <h2>Recent projects</h2>
+            <h2>Projects</h2>
             <span aria-hidden="true" />
-            <p>Available</p>
           </div>
           <div className="profile-projects-grid stagger-list">
             {projects.map((project) => (

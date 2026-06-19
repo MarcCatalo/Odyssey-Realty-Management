@@ -1,15 +1,5 @@
 import Link from "next/link";
-import {
-  Archive,
-  ArrowRight,
-  Building2,
-  CheckCircle2,
-  Eye,
-  MapPin,
-  Pencil,
-  Plus,
-  ShieldCheck
-} from "lucide-react";
+import { Archive, Building2, CheckCircle2, Eye, MapPin, Pencil, Plus, ShieldCheck } from "lucide-react";
 
 import { developers, projects, salesAgent } from "@/features/catalog/data";
 import type { Developer } from "@/features/catalog/types";
@@ -86,22 +76,18 @@ export default function RealtorDevelopersPage({
             <Link
               className="realtor-add-card interactive-card reveal scroll-reveal"
               href="/realtor/developers/new"
+              aria-disabled={!canAddDeveloper}
               prefetch
             >
               <div className="realtor-add-icon">
-                <Plus aria-hidden="true" className="h-8 w-8" />
+                <Plus aria-hidden="true" className="h-12 w-12" />
               </div>
-              <div>
-                <h3>Add new developer</h3>
-                <p>
-                  Create a profile with coverage, specialty, developer contact channels, and publishing
-                  readiness details.
-                </p>
-              </div>
-              <div className="realtor-action-footer">
-                <span>{canAddDeveloper ? "Start profile" : "Limit reached"}</span>
-                <ArrowRight aria-hidden="true" className="h-4 w-4" />
-              </div>
+              <h3>Add new developer</h3>
+              <p>
+                {canAddDeveloper
+                  ? "Create a new developer profile for the public catalog."
+                  : "Developer limit reached under the current plan."}
+              </p>
             </Link>
           </div>
         </div>

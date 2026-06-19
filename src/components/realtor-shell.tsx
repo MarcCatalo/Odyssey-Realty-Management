@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   ExternalLink,
-  GalleryHorizontal,
   Home,
   LogOut,
   Mail,
@@ -22,8 +21,7 @@ type RealtorShellProps = {
 const navItems = [
   { href: "/realtor", label: "Dashboard", key: "dashboard", icon: Home },
   { href: "/realtor/developers", label: "Developers", key: "developers", icon: UsersRound },
-  { href: "/realtor/gallery", label: "Gallery Assets", key: "gallery", icon: GalleryHorizontal },
-  { href: "/realtor/contact", label: "Contact Profile", key: "contact", icon: Mail },
+  { href: "/realtor/contact", label: "Profile", key: "contact", icon: Mail },
   { href: "/", label: "Public Preview", key: "preview", icon: ExternalLink }
 ] as const;
 
@@ -149,8 +147,8 @@ function getActiveSection(pathname: string) {
     return "developers";
   }
 
-  if (segment === "gallery") {
-    return "gallery";
+  if (segment === "projects") {
+    return "developers";
   }
 
   if (segment === "contact") {

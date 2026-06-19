@@ -20,7 +20,14 @@ export type ContactLink = {
 };
 
 export type SalesAgent = {
+  businessLabel: string;
+  catalogSlug: string;
+  headerMain: string;
+  headerPrimarySubheader: string;
+  headerSecondarySubheader: string;
   name: string;
+  profileImage?: ProjectImage;
+  socials: ContactLink[];
   title: string;
   summary: string;
   contactLinks: ContactLink[];
@@ -55,6 +62,16 @@ export type Project = {
   projectType: string;
   statusLabel?: string;
   priceRange?: string;
+  totalLotsAvailable?: number;
+  levels?: string;
+  lotSizeRange?: string;
+  completionLabel?: string;
+  mapAddress?: string;
+  totalSiteArea?: string;
+  roadReserve?: string;
+  commonZones?: string;
+  zoning?: string;
+  sdpReference?: string;
   coverImage: ProjectImage;
   gallery: ProjectImage[];
   sdpImage: ProjectImage;

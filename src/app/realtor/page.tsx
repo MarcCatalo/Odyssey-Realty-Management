@@ -3,7 +3,7 @@ import {
   ArrowRight,
   Building2,
   Eye,
-  GalleryHorizontal,
+  Home,
   Mail,
   Plus,
   ShieldCheck,
@@ -31,11 +31,11 @@ const quickActions = [
     cta: "Create developer"
   },
   {
-    title: "Gallery assets",
-    description: "Review project covers, house galleries, and SDP image readiness.",
-    href: "/realtor/gallery",
-    icon: GalleryHorizontal,
-    cta: "Review assets"
+    title: "Add new project",
+    description: "Create a project page and choose which developer owns it.",
+    href: "/realtor/projects/new",
+    icon: Home,
+    cta: "Create project"
   },
   {
     title: "Contact profile",
@@ -54,8 +54,8 @@ export default function RealtorDashboardPage() {
           <div className="realtor-hero-copy reveal">
             <p className="realtor-hero-eyebrow">Catalog manager</p>
             <h1>Realtor dashboard</h1>
-            <p>
-              Manage published developers, project previews, gallery assets, and sales-agent contact
+              <p>
+              Manage published developers, project previews, media, and sales-agent contact
               details for your public catalog.
             </p>
           </div>
@@ -79,7 +79,7 @@ export default function RealtorDashboardPage() {
         <div className="realtor-stat-grid mx-auto max-w-7xl">
           <DashboardStat icon={Building2} label="Published developers" value={`${publishedDevelopers.length}`} />
           <DashboardStat icon={UsersRound} label="Developer limit" value="4 / 10" />
-          <DashboardStat icon={GalleryHorizontal} label="Published projects" value={`${publishedProjects.length}`} />
+          <DashboardStat icon={Building2} label="Published projects" value={`${publishedProjects.length}`} />
           <DashboardStat icon={Mail} label="Default contact" value={salesAgent.name} />
         </div>
       </section>
@@ -124,7 +124,7 @@ export default function RealtorDashboardPage() {
             <h2>Pro catalog</h2>
             <UsageRow label="Developers" value="4 of 10 published" percent="40%" />
             <UsageRow label="Projects" value="2 of 100 published" percent="2%" />
-            <UsageRow label="Gallery storage" value="18 MB of 500 MB used" percent="4%" />
+            <UsageRow label="Media storage" value="18 MB of 500 MB used" percent="4%" />
           </div>
 
           <div className="realtor-panel reveal reveal-delay-1">
@@ -133,7 +133,7 @@ export default function RealtorDashboardPage() {
             <div className="realtor-activity-list">
               <ActivityItem title="PrimeBuild Homes updated" meta="Developer profile checked today" />
               <ActivityItem title="Greenridge Villas published" meta="Project page available on public catalog" />
-              <ActivityItem title="Gallery review needed" meta="Northline Terraces has no interior gallery yet" />
+              <ActivityItem title="Media review needed" meta="Northline Terraces has no interior gallery yet" />
             </div>
           </div>
         </div>
