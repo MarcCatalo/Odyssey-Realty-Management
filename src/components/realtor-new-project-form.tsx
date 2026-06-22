@@ -23,9 +23,9 @@ const coreProjectFields = [
 ];
 
 const projectStatFields = [
-  { label: "Project price", name: "priceRange", placeholder: "From PHP 5.8M" },
+  { label: "Project price", name: "priceRange", placeholder: "5800000", type: "number" },
   { label: "Total lots available", name: "totalLotsAvailable", placeholder: "18", type: "number" },
-  { label: "Levels", name: "levels", placeholder: "2" },
+  { label: "Levels", name: "levels", placeholder: "2", type: "number" },
   { label: "Lot size range", name: "lotSizeRange", placeholder: "180-220 sqm" },
   { label: "Completion label", name: "completionLabel", placeholder: "Q3 2026" }
 ];
@@ -50,6 +50,9 @@ export function RealtorNewProjectForm({
   const router = useRouter();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [coverFiles, setCoverFiles] = useState<File[]>([]);
+  const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
+  const [sdpFiles, setSdpFiles] = useState<File[]>([]);
   const fallbackDeveloperSlug = selectedDeveloperSlug ?? developers[0]?.slug;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -85,18 +88,31 @@ export function RealtorNewProjectForm({
       },
       method: "POST"
     });
-    const payload = (await response.json().catch(() => null)) as {
-      message?: string;
-      redirectTo?: string;
-    } | null;
-
-    setIsSaving(false);
+    const payload = (await response.json().catch(() => null)) as CreatedProjectResponse | null;
 
     if (!response.ok) {
+      setIsSaving(false);
       setErrorMessage(payload?.message ?? "Project could not be saved.");
       return;
     }
 
+    const createdProjectId = payload?.project?.id;
+
+    if (createdProjectId) {
+      const uploadError = await uploadQueuedProjectMedia(createdProjectId, {
+        project_cover: coverFiles.slice(0, 1),
+        project_gallery: galleryFiles,
+        project_sdp: sdpFiles.slice(0, 1)
+      });
+
+      if (uploadError) {
+        setIsSaving(false);
+        setErrorMessage(uploadError);
+        return;
+      }
+    }
+
+    setIsSaving(false);
     refreshAfterMutation(router, payload?.redirectTo ?? "/realtor/developers");
   }
 
@@ -212,6 +228,8 @@ export function RealtorNewProjectForm({
                 description="Main image shown on project cards, previews, and the project hero surfaces."
                 fallbackText="Cover"
                 label="Cover photo"
+                mediaRole="project_cover"
+                onPendingFilesChange={setCoverFiles}
                 variant="wide"
               />
               <RealtorImageUpload
@@ -219,13 +237,17 @@ export function RealtorNewProjectForm({
                 fallbackText="Gallery"
                 label="House gallery photos"
                 manageable
+                mediaRole="project_gallery"
                 multiple
+                onPendingFilesChange={setGalleryFiles}
                 variant="gallery"
               />
               <RealtorImageUpload
                 description="Site development plan image shown in the public SDP section."
                 fallbackText="SDP"
                 label="SDP image"
+                mediaRole="project_sdp"
+                onPendingFilesChange={setSdpFiles}
                 variant="wide"
               />
             </div>
@@ -269,12 +291,58 @@ function TextField({
     <label className="realtor-field">
       <span>{field.label}</span>
       <input
+        inputMode={field.type === "number" ? "numeric" : undefined}
         min={field.type === "number" ? 0 : undefined}
         name={field.name}
+        onInput={
+          field.type === "number"
+            ? (event) => {
+                event.currentTarget.value = event.currentTarget.value.replace(/[^\d]/g, "");
+              }
+            : undefined
+        }
         placeholder={field.placeholder}
         required={field.required}
         type={field.type ?? "text"}
       />
     </label>
   );
+}
+
+type CreatedProjectResponse = {
+  message?: string;
+  project?: {
+    id?: string;
+  };
+  redirectTo?: string;
+};
+
+async function uploadQueuedProjectMedia(
+  projectId: string,
+  filesByRole: Record<"project_cover" | "project_gallery" | "project_sdp", File[]>
+) {
+  for (const [role, files] of Object.entries(filesByRole) as Array<
+    ["project_cover" | "project_gallery" | "project_sdp", File[]]
+  >) {
+    for (const file of files) {
+      const mediaData = new FormData();
+      mediaData.set("file", file);
+      mediaData.set("projectId", projectId);
+      mediaData.set("role", role);
+      mediaData.set("altText", file.name);
+      mediaData.set("caption", file.name.replace(/\.[^.]+$/, ""));
+
+      const uploadResponse = await fetch("/api/realtor/media", {
+        body: mediaData,
+        method: "POST"
+      });
+      const uploadPayload = (await uploadResponse.json().catch(() => null)) as { message?: string } | null;
+
+      if (!uploadResponse.ok) {
+        return uploadPayload?.message ?? "Project was saved, but one or more images could not be uploaded.";
+      }
+    }
+  }
+
+  return null;
 }

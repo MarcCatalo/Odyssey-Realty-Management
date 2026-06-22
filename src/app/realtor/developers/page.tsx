@@ -1,6 +1,8 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Building2, CheckCircle2, Eye, MapPin, Pencil, Plus, ShieldCheck } from "lucide-react";
 
+import { RealtorDeleteButton } from "@/components/realtor-delete-button";
 import { getCatalogForRealtorId, getRealtorSubscriptionLimits } from "@/features/catalog/live-queries";
 import type { Developer } from "@/features/catalog/types";
 import { requireRealtorContextForPage } from "@/server/auth/realtor-session";
@@ -39,7 +41,7 @@ export default async function RealtorDevelopersPage({
             <p className="realtor-hero-eyebrow">Developer management</p>
             <h1>Developer grid</h1>
             <p>
-              Review published developers, update profile details, archive inactive partners, and add
+              Review published developers, update profile details, delete inactive partners, and add
               a new developer when your subscription limit allows it.
             </p>
           </div>
@@ -121,7 +123,18 @@ function DeveloperManagementCard({ developer, projects }: { developer: Developer
         prefetch
       >
         <div className="realtor-management-media">
-          <span>{initials}</span>
+          {developer.logoImage ? (
+            <Image
+              alt={developer.logoImage.alt}
+              className="card-media object-cover"
+              fill
+              sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 100vw"
+              src={developer.logoImage.src}
+              unoptimized
+            />
+          ) : (
+            <span>{initials}</span>
+          )}
           <strong>{developer.status}</strong>
         </div>
         <div className="realtor-management-body">
@@ -151,6 +164,7 @@ function DeveloperManagementCard({ developer, projects }: { developer: Developer
           <Pencil aria-hidden="true" className="h-4 w-4" />
           Manage
         </Link>
+        <RealtorDeleteButton developerSlug={developer.slug} itemName={developer.name} kind="developer" />
       </div>
     </article>
   );

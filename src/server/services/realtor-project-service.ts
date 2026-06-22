@@ -1,7 +1,7 @@
 import { AppError } from "@/server/errors";
 import {
-  archiveProject,
   countProjectsForDeveloper,
+  deleteProject,
   findDeveloperBySlug,
   findProjectBySlugs,
   getProjectSlugs,
@@ -94,7 +94,7 @@ export async function deleteProjectForRealtor({
     throw new AppError("Project could not be found.", 404);
   }
 
-  return archiveProject({
+  return deleteProject({
     projectId: existingProject.id,
     realtorId
   });

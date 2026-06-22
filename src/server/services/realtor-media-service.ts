@@ -4,13 +4,23 @@ import { AppError } from "@/server/errors";
 import {
   attachProjectMedia,
   countProjectImages,
+  deleteProjectMedia,
+  findDeveloperBySlug,
+  findProjectMediaForRealtor,
   findProjectForRealtor,
   insertMediaAsset,
   projectHasMediaRole,
+  updateDeveloperLogoAsset,
+  updateProjectMediaLabel,
   uploadObject
 } from "@/server/repositories/realtor-catalog-repository";
 import { assertProjectImageLimit, type SubscriptionLimits } from "@/server/services/subscription-limits";
-import type { UploadProjectMediaInput } from "@/server/validators/realtor-media";
+import type {
+  DeleteProjectMediaInput,
+  UpdateProjectMediaInput,
+  UploadDeveloperLogoInput,
+  UploadProjectMediaInput
+} from "@/server/validators/realtor-media";
 
 const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
 const OUTPUT_MIME_TYPE = "image/webp";
@@ -30,13 +40,7 @@ export async function uploadProjectMediaForRealtor({
   limits: SubscriptionLimits;
   realtorId: string;
 }) {
-  if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
-    throw new AppError("Upload a JPG, PNG, or WebP image.", 400);
-  }
-
-  if (file.size > MAX_UPLOAD_BYTES) {
-    throw new AppError("Images must be 5 MB or smaller before upload.", 413);
-  }
+  validateImageFile(file);
 
   const project = await findProjectForRealtor(realtorId, input.projectId);
 
@@ -97,6 +101,101 @@ export async function uploadProjectMediaForRealtor({
     mediaAsset,
     projectMedia
   };
+}
+
+export async function uploadDeveloperLogoForRealtor({
+  file,
+  input,
+  realtorId
+}: {
+  file: File;
+  input: UploadDeveloperLogoInput;
+  realtorId: string;
+}) {
+  validateImageFile(file);
+
+  const developer = await findDeveloperBySlug(realtorId, input.developerSlug);
+
+  if (!developer) {
+    throw new AppError("Choose a valid developer for this realtor account.", 404);
+  }
+
+  const originalBuffer = Buffer.from(await file.arrayBuffer());
+  const compressed = await compressImage(originalBuffer, file.type);
+  const storagePath = [
+    "realtors",
+    realtorId,
+    "developers",
+    developer.id,
+    "logo",
+    `${randomUUID()}.${compressed.extension}`
+  ].join("/");
+
+  await uploadObject({
+    contentType: compressed.mimeType,
+    data: compressed.buffer,
+    path: storagePath
+  });
+
+  const mediaAsset = await insertMediaAsset({
+    altText: input.altText,
+    bucket: "realtor-media",
+    caption: input.caption,
+    fileSizeBytes: compressed.buffer.byteLength,
+    height: compressed.height,
+    mimeType: compressed.mimeType,
+    originalFilename: file.name,
+    realtorId,
+    storagePath,
+    width: compressed.width
+  });
+
+  const developerWithLogo = await updateDeveloperLogoAsset({
+    developerId: developer.id,
+    mediaAssetId: mediaAsset.id,
+    realtorId
+  });
+
+  return {
+    developer: developerWithLogo,
+    mediaAsset
+  };
+}
+
+export async function updateProjectMediaForRealtor({
+  input,
+  realtorId
+}: {
+  input: UpdateProjectMediaInput;
+  realtorId: string;
+}) {
+  const projectMedia = await findProjectMediaForRealtor(realtorId, input.projectMediaId);
+
+  if (!projectMedia) {
+    throw new AppError("Project media could not be found.", 404);
+  }
+
+  return updateProjectMediaLabel({
+    altText: input.altText,
+    caption: input.caption,
+    projectMediaId: input.projectMediaId
+  });
+}
+
+export async function deleteProjectMediaForRealtor({
+  input,
+  realtorId
+}: {
+  input: DeleteProjectMediaInput;
+  realtorId: string;
+}) {
+  const projectMedia = await findProjectMediaForRealtor(realtorId, input.projectMediaId);
+
+  if (!projectMedia) {
+    throw new AppError("Project media could not be found.", 404);
+  }
+
+  return deleteProjectMedia(input.projectMediaId);
 }
 
 async function compressImage(input: Buffer, originalMimeType: string) {
@@ -162,4 +261,14 @@ function getExtensionForMimeType(mimeType: string) {
   }
 
   return "jpg";
+}
+
+function validateImageFile(file: File) {
+  if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+    throw new AppError("Upload a JPG, PNG, or WebP image.", 400);
+  }
+
+  if (file.size > MAX_UPLOAD_BYTES) {
+    throw new AppError("Images must be 5 MB or smaller before upload.", 413);
+  }
 }

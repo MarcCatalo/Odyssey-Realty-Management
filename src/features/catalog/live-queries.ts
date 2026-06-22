@@ -97,6 +97,13 @@ type MediaRow = {
     | null;
 };
 
+type MediaAssetRow = {
+  id: string;
+  storage_path: string;
+  alt_text: string | null;
+  caption: string | null;
+};
+
 type SubscriptionRow = {
   developer_limit_override: number | null;
   project_limit_override: number | null;
@@ -295,6 +302,11 @@ async function getCatalogForRealtor(realtorId: string, realtor: RealtorRow): Pro
   const mediaRows = ((mediaResult.data ?? []) as unknown as MediaRow[]).filter((media) =>
     projectRows.some((project) => project.id === media.project_id)
   );
+  const logoByAssetId = await buildDeveloperLogoByAssetId(
+    developerRows
+      .map((developer) => developer.logo_asset_id)
+      .filter((assetId): assetId is string => Boolean(assetId))
+  );
   const mediaByProject = await buildMediaByProject(mediaRows);
   const projectCounts = new Map<string, number>();
 
@@ -304,11 +316,47 @@ async function getCatalogForRealtor(realtorId: string, realtor: RealtorRow): Pro
 
   const salesAgent = mapSalesAgent(realtor, settingsResult.data ?? null, contacts);
   const developers = developerRows.map((developer) =>
-    mapDeveloper(developer, contacts, projectCounts.get(developer.id) ?? 0)
+    mapDeveloper(developer, contacts, projectCounts.get(developer.id) ?? 0, logoByAssetId)
   );
   const projects = projectRows.map((project) => mapProject(project, mediaByProject.get(project.id)));
 
   return { salesAgent, developers, projects };
+}
+
+async function buildDeveloperLogoByAssetId(assetIds: string[]) {
+  const client = createServerSupabaseClient();
+  const logoByAssetId = new Map<string, ProjectImage>();
+
+  if (!client || assetIds.length === 0) {
+    return logoByAssetId;
+  }
+
+  const { data } = await client
+    .from("media_assets")
+    .select("id,storage_path,alt_text,caption")
+    .in("id", assetIds);
+  const rows = (data ?? []) as MediaAssetRow[];
+
+  await Promise.all(
+    rows.map(async (asset) => {
+      if (!asset.storage_path) {
+        return;
+      }
+
+      const { data: signedUrl } = await client.storage
+        .from("realtor-media")
+        .createSignedUrl(asset.storage_path, 60 * 60);
+
+      logoByAssetId.set(asset.id, {
+        id: `developer_logo:${asset.id}`,
+        src: signedUrl?.signedUrl ?? fallbackCover.src,
+        alt: asset.alt_text ?? asset.caption ?? "Developer logo",
+        caption: asset.caption ?? "Developer logo"
+      });
+    })
+  );
+
+  return logoByAssetId;
 }
 
 async function buildMediaByProject(mediaRows: MediaRow[]) {
@@ -359,7 +407,12 @@ function mapSalesAgent(realtor: RealtorRow, settings: CatalogSettingsRow | null,
   };
 }
 
-function mapDeveloper(developer: DeveloperRow, contacts: ContactRow[], projectCount: number): Developer {
+function mapDeveloper(
+  developer: DeveloperRow,
+  contacts: ContactRow[],
+  projectCount: number,
+  logoByAssetId: Map<string, ProjectImage>
+): Developer {
   return {
     id: developer.id,
     name: developer.name,
@@ -369,6 +422,7 @@ function mapDeveloper(developer: DeveloperRow, contacts: ContactRow[], projectCo
     coverage: developer.coverage,
     projectCount,
     status: developer.publication_status,
+    logoImage: developer.logo_asset_id ? logoByAssetId.get(developer.logo_asset_id) : undefined,
     contactLinks: contacts
       .filter((contact) => contact.owner_type === "developer" && contact.developer_id === developer.id)
       .map(mapContact)

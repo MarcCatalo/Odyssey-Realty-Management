@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { AlertTriangle, ArrowLeft, Eye, Pencil, Plus, Save, Trash2 } from "lucide-react";
 
 import { RealtorImageUpload } from "@/components/realtor-image-upload";
+import { RealtorFeedbackToast } from "@/components/realtor-feedback-toast";
 import { RealtorProjectManagementCard } from "@/components/realtor-project-management-card";
 import type { Developer, Project } from "@/features/catalog/types";
 import { refreshAfterMutation } from "@/lib/realtor-navigation";
@@ -97,15 +98,13 @@ export function RealtorDeveloperEditor({
       redirectTo?: string;
     } | null;
 
-    setIsDeleting(false);
-
     if (!response.ok) {
+      setIsDeleting(false);
       setShowDeleteModal(false);
       setErrorMessage(payload?.message ?? "Developer could not be deleted.");
       return;
     }
 
-    setShowDeleteModal(false);
     refreshAfterMutation(router, `${payload?.redirectTo ?? "/realtor/developers"}?deleted=${developer.slug}`);
   }
 
@@ -122,7 +121,7 @@ export function RealtorDeveloperEditor({
             <AlertTriangle aria-hidden="true" className="h-8 w-8 text-[#b3261e]" />
             <h2>Delete developer profile?</h2>
             <p id="delete-developer-description">
-              This will remove {developer.name} from the realtor catalog view. Do you want to continue?
+              This will permanently delete {developer.name} and its projects from this realtor catalog.
             </p>
             <div className="realtor-confirm-actions">
               <button className="realtor-text-button" onClick={() => setShowDeleteModal(false)} type="button">
@@ -145,9 +144,7 @@ export function RealtorDeveloperEditor({
           </Link>
           <div className="realtor-toolbar-actions">
             {showSavedToast ? (
-              <div aria-live="polite" className="realtor-feedback-toast">
-                <span>Edits have been saved.</span>
-              </div>
+              <RealtorFeedbackToast message="Edits have been saved." />
             ) : null}
             <Link className="realtor-text-button" href={`/developers/${developer.slug}`} target="_blank">
               <Eye aria-hidden="true" className="h-4 w-4" />
@@ -219,7 +216,10 @@ export function RealtorDeveloperEditor({
               description="Logo used on developer cards and the public developer profile."
               disabled={!isEditing}
               fallbackText={initials}
+              initialImages={developer.logoImage ? [developer.logoImage] : []}
               label="Developer logo"
+              developerSlug={developer.slug}
+              mediaRole="developer_logo"
               variant="logo"
             />
 

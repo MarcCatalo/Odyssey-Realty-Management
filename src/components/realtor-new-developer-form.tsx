@@ -31,6 +31,7 @@ export function RealtorNewDeveloperForm() {
   const router = useRouter();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [logoFiles, setLogoFiles] = useState<File[]>([]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -52,17 +53,41 @@ export function RealtorNewDeveloperForm() {
       method: "POST"
     });
     const payload = (await response.json().catch(() => null)) as {
+      developer?: {
+        slug?: string;
+      };
       message?: string;
       redirectTo?: string;
     } | null;
 
-    setIsSaving(false);
-
     if (!response.ok) {
+      setIsSaving(false);
       setErrorMessage(payload?.message ?? "Developer could not be saved.");
       return;
     }
 
+    if (payload?.developer?.slug && logoFiles[0]) {
+      const mediaData = new FormData();
+      mediaData.set("file", logoFiles[0]);
+      mediaData.set("developerSlug", payload.developer.slug);
+      mediaData.set("role", "developer_logo");
+      mediaData.set("altText", logoFiles[0].name);
+      mediaData.set("caption", logoFiles[0].name.replace(/\.[^.]+$/, ""));
+
+      const uploadResponse = await fetch("/api/realtor/media", {
+        body: mediaData,
+        method: "POST"
+      });
+      const uploadPayload = (await uploadResponse.json().catch(() => null)) as { message?: string } | null;
+
+      if (!uploadResponse.ok) {
+        setIsSaving(false);
+        setErrorMessage(uploadPayload?.message ?? "Developer was saved, but the logo could not be uploaded.");
+        return;
+      }
+    }
+
+    setIsSaving(false);
     refreshAfterMutation(router, payload?.redirectTo ?? "/realtor/developers");
   }
 
@@ -134,6 +159,8 @@ export function RealtorNewDeveloperForm() {
               description="Logo used on developer cards and the public developer profile."
               fallbackText="Logo"
               label="Developer logo"
+              mediaRole="developer_logo"
+              onPendingFilesChange={setLogoFiles}
               variant="logo"
             />
 

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, MapPin } from "lucide-react";
 
 import { getDeveloperRoute } from "@/features/catalog/queries";
@@ -20,7 +21,20 @@ export function DeveloperCard({ developer }: { developer: Developer }) {
         prefetch
       >
         <div className="public-developer-card-media">
-          <div className="public-developer-card-initials">{initials}</div>
+          <div className="public-developer-card-initials">
+            {developer.logoImage ? (
+              <Image
+                alt={developer.logoImage.alt}
+                className="object-contain"
+                fill
+                sizes="5rem"
+                src={developer.logoImage.src}
+                unoptimized
+              />
+            ) : (
+              initials
+            )}
+          </div>
           <span className="public-developer-card-count">
             {developer.projectCount} Projects
           </span>

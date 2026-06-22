@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getRealtorContext } from "@/server/auth/realtor-session";
 import { revalidateCatalogPaths } from "@/server/cache/catalog-revalidation";
 import { getErrorResponse } from "@/server/errors";
+import { logInfo, logWarn } from "@/server/logger";
 import {
   createDeveloperForRealtor,
   deleteDeveloperForRealtor,
@@ -15,6 +16,8 @@ import {
 } from "@/server/validators/realtor-developer";
 
 export async function createDeveloperController(request: Request) {
+  const startedAt = Date.now();
+
   try {
     const body = await request.json().catch(() => null);
     const parsed = createDeveloperSchema.safeParse(body);
@@ -28,6 +31,12 @@ export async function createDeveloperController(request: Request) {
       input: parsed.data,
       limits: context.limits,
       realtorId: context.realtorId
+    });
+    logInfo("realtor.developer.create", {
+      developerId: developer.id,
+      durationMs: Date.now() - startedAt,
+      realtorId: context.realtorId,
+      slug: developer.slug
     });
     revalidateCatalogPaths(
       [
@@ -47,12 +56,18 @@ export async function createDeveloperController(request: Request) {
     );
   } catch (error) {
     const response = getErrorResponse(error);
+    logWarn("realtor.developer.create_failed", {
+      durationMs: Date.now() - startedAt,
+      status: response.status
+    });
 
     return NextResponse.json({ message: response.message }, { status: response.status });
   }
 }
 
 export async function updateDeveloperController(request: Request) {
+  const startedAt = Date.now();
+
   try {
     const body = await request.json().catch(() => null);
     const parsed = updateDeveloperSchema.safeParse(body);
@@ -65,6 +80,12 @@ export async function updateDeveloperController(request: Request) {
     const developer = await updateDeveloperForRealtor({
       input: parsed.data,
       realtorId: context.realtorId
+    });
+    logInfo("realtor.developer.update", {
+      developerId: developer.id,
+      durationMs: Date.now() - startedAt,
+      realtorId: context.realtorId,
+      slug: developer.slug
     });
     revalidateCatalogPaths(
       [
@@ -84,12 +105,18 @@ export async function updateDeveloperController(request: Request) {
     });
   } catch (error) {
     const response = getErrorResponse(error);
+    logWarn("realtor.developer.update_failed", {
+      durationMs: Date.now() - startedAt,
+      status: response.status
+    });
 
     return NextResponse.json({ message: response.message }, { status: response.status });
   }
 }
 
 export async function deleteDeveloperController(request: Request) {
+  const startedAt = Date.now();
+
   try {
     const body = await request.json().catch(() => null);
     const parsed = deleteDeveloperSchema.safeParse(body);
@@ -100,6 +127,12 @@ export async function deleteDeveloperController(request: Request) {
 
     const context = await getRealtorContext();
     const developer = await deleteDeveloperForRealtor({
+      realtorId: context.realtorId,
+      slug: parsed.data.slug
+    });
+    logInfo("realtor.developer.delete", {
+      developerId: developer.id,
+      durationMs: Date.now() - startedAt,
       realtorId: context.realtorId,
       slug: parsed.data.slug
     });
@@ -118,6 +151,10 @@ export async function deleteDeveloperController(request: Request) {
     });
   } catch (error) {
     const response = getErrorResponse(error);
+    logWarn("realtor.developer.delete_failed", {
+      durationMs: Date.now() - startedAt,
+      status: response.status
+    });
 
     return NextResponse.json({ message: response.message }, { status: response.status });
   }

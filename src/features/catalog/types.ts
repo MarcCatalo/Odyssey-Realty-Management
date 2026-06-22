@@ -45,6 +45,7 @@ export type Developer = {
   projectCount: number;
   status: PublicationStatus;
   contactLinks: ContactLink[];
+  logoImage?: ProjectImage;
 };
 
 export type ProjectImage = {

@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import {
   Building2,
   Calendar,
@@ -61,7 +62,20 @@ export default async function DeveloperProfilePage({ params }: DeveloperProfileP
           <div className="profile-template-hero-grid">
             <div className="profile-template-copy reveal">
             <div className="profile-title-row">
-              <div className="profile-mark">{initials}</div>
+              <div className="profile-mark">
+                {developer.logoImage ? (
+                  <Image
+                    alt={developer.logoImage.alt}
+                    className="object-contain"
+                    fill
+                    sizes="5rem"
+                    src={developer.logoImage.src}
+                    unoptimized
+                  />
+                ) : (
+                  initials
+                )}
+              </div>
               <div>
                 <p className="profile-eyebrow">{heroCategory}</p>
                 <h1 className="profile-title">{developer.name}</h1>

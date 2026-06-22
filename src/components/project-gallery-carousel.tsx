@@ -135,6 +135,11 @@ export function ProjectGalleryCarousel({ images }: { images: ProjectImage[] }) {
           className="project-gallery-track stagger-list"
           ref={trackRef}
         >
+          {images.length === 0 ? (
+            <div className="project-gallery-empty">
+              House gallery photos will appear here once uploaded by the realtor.
+            </div>
+          ) : null}
           {images.map((image) => (
             <button
               className="project-gallery-slide interactive-card reveal scroll-reveal"

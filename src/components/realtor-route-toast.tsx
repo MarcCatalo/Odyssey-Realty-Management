@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
+import { RealtorFeedbackToast } from "@/components/realtor-feedback-toast";
+
 const toastMessages: Record<string, string> = {
   deleted: "Developer profile deleted.",
   projectDeleted: "Project deleted.",
@@ -39,9 +41,5 @@ export function RealtorRouteToast() {
     };
   }, [pathname, router, searchParams]);
 
-  return message ? (
-    <div aria-live="polite" className="realtor-feedback-toast">
-      <span>{message}</span>
-    </div>
-  ) : null;
+  return message ? <RealtorFeedbackToast message={message} /> : null;
 }

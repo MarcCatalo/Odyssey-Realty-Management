@@ -22,3 +22,4 @@ service-account*.json
 supabase/.temp
 .codex/
 .codex-dev-server*.log
+.local-dev/

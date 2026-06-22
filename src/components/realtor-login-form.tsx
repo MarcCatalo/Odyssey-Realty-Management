@@ -117,11 +117,28 @@ export function RealtorLoginForm() {
   return (
     <>
       <form className="realtor-login-form" onSubmit={handlePasswordSubmit}>
+        {isSubmitting && !state.requiresFirstLoginCode ? (
+          <div className="realtor-login-loading" aria-live="polite">
+            <span />
+            <div>
+              <strong>Signing in</strong>
+              <p>Checking your realtor account and subscription.</p>
+            </div>
+          </div>
+        ) : null}
+
         <label>
           <span>Email address</span>
           <div>
             <Mail aria-hidden="true" className="h-4 w-4 shrink-0" />
-            <input autoComplete="email" name="email" placeholder="realtor@example.com" required type="email" />
+            <input
+              autoComplete="email"
+              disabled={isSubmitting}
+              name="email"
+              placeholder="realtor@example.com"
+              required
+              type="email"
+            />
           </div>
         </label>
 
@@ -131,6 +148,7 @@ export function RealtorLoginForm() {
             <LockKeyhole aria-hidden="true" className="h-4 w-4 shrink-0" />
             <input
               autoComplete="current-password"
+              disabled={isSubmitting}
               name="password"
               placeholder="Enter password"
               required
@@ -185,6 +203,7 @@ export function RealtorLoginForm() {
                   autoCapitalize="characters"
                   autoComplete="one-time-code"
                   autoFocus
+                  disabled={isSubmitting}
                   inputMode="text"
                   maxLength={6}
                   onChange={(event) => setFirstLoginCode(event.target.value.toUpperCase())}

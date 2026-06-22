@@ -27,7 +27,7 @@ export const createProjectSchema = z.object({
   commonZones: optionalText(120),
   zoning: optionalText(160),
   sdpReference: optionalText(160),
-  publicationStatus: z.enum(["draft", "published"]).default("draft")
+  publicationStatus: z.enum(["draft", "published", "archived"]).default("draft")
 });
 
 export const updateProjectSchema = createProjectSchema.extend({

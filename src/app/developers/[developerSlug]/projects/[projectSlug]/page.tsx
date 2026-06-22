@@ -13,6 +13,7 @@ import { notFound } from "next/navigation";
 
 import { BreadcrumbBar } from "@/components/breadcrumb-bar";
 import { ProjectGalleryCarousel } from "@/components/project-gallery-carousel";
+import { ProjectSdpImagePanel } from "@/components/project-sdp-image-panel";
 import { getPublicCatalog } from "@/features/catalog/live-queries";
 
 type ProjectDetailsPageProps = {
@@ -41,9 +42,9 @@ export default async function ProjectDetailsPage({ params }: ProjectDetailsPageP
     notFound();
   }
 
-  const gallery = project.gallery.length > 0 ? project.gallery : [project.coverImage];
-  const galleryImages = project.gallery.length > 0 ? [project.coverImage, ...gallery] : [project.coverImage];
+  const galleryImages = project.gallery;
   const compactLocation = project.location.split(",")[0] ?? project.location;
+  const formattedPriceRange = formatPesoPrice(project.priceRange);
 
   return (
     <>
@@ -76,7 +77,7 @@ export default async function ProjectDetailsPage({ params }: ProjectDetailsPageP
           <ProjectStat icon={Layers} label="Levels" value={project.levels ?? "Contact sales"} />
           <ProjectStat icon={Maximize2} label="Lot sizes" value={project.lotSizeRange ?? "Contact sales"} />
           <ProjectStat icon={Calendar} label="Completion" value={project.completionLabel ?? "Contact sales"} />
-          <ProjectStat icon={BadgeDollarSign} label="Price range" value={project.priceRange ?? "Contact sales"} />
+          <ProjectStat icon={BadgeDollarSign} label="Price range" value={formattedPriceRange ?? "Contact sales"} />
         </div>
       </section>
 
@@ -91,22 +92,7 @@ export default async function ProjectDetailsPage({ params }: ProjectDetailsPageP
         <div className="mx-auto max-w-7xl">
           <SectionHeading title="Site development plan" />
           <div className="project-sdp-panel reveal">
-            <div className="project-plan">
-              <div className="project-plan-label">Site plan, {project.title}</div>
-              <div className="project-plan-grid" aria-hidden="true">
-                {Array.from({ length: 12 }).map((_, index) => (
-                  <span className={index >= 4 && index <= 7 ? "project-plan-lot project-plan-lot-active" : "project-plan-lot"} key={index}>
-                    {index + 101}
-                  </span>
-                ))}
-              </div>
-              <div className="project-plan-road">Road reserve</div>
-              <div className="project-plan-legend">
-                <span>Villa units</span>
-                <span>Common area</span>
-                <span>Road reserve</span>
-              </div>
-            </div>
+            <ProjectSdpImagePanel image={project.sdpImage} />
             <aside className="project-plan-details">
               <p className="project-detail-kicker">Plan details</p>
               <PlanRow label="Total site area" value={project.totalSiteArea ?? "Contact sales"} />
@@ -223,4 +209,18 @@ function LocationItem({ icon: Icon, label }: { icon: typeof MapPin; label: strin
       <span>{label}</span>
     </div>
   );
+}
+
+function formatPesoPrice(value?: string) {
+  if (!value) {
+    return undefined;
+  }
+
+  const trimmedValue = value.trim();
+
+  if (!/^\d+$/.test(trimmedValue)) {
+    return trimmedValue;
+  }
+
+  return `PHP ${Number(trimmedValue).toLocaleString("en-PH")}`;
 }

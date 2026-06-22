@@ -1,7 +1,7 @@
 import { AppError } from "@/server/errors";
 import {
-  archiveDeveloper,
   countDevelopers,
+  deleteDeveloper,
   findDeveloperBySlug,
   getDeveloperSlugs,
   insertDeveloper,
@@ -70,5 +70,5 @@ export async function deleteDeveloperForRealtor({
     throw new AppError("Developer could not be found.", 404);
   }
 
-  return archiveDeveloper({ realtorId, slug });
+  return deleteDeveloper({ realtorId, slug });
 }

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getRealtorContext } from "@/server/auth/realtor-session";
 import { revalidateCatalogPaths } from "@/server/cache/catalog-revalidation";
 import { getErrorResponse } from "@/server/errors";
+import { logInfo, logWarn } from "@/server/logger";
 import {
   createProjectForRealtor,
   deleteProjectForRealtor,
@@ -15,6 +16,8 @@ import {
 } from "@/server/validators/realtor-project";
 
 export async function createProjectController(request: Request) {
+  const startedAt = Date.now();
+
   try {
     const body = await request.json().catch(() => null);
     const parsed = createProjectSchema.safeParse(body);
@@ -28,6 +31,13 @@ export async function createProjectController(request: Request) {
       input: parsed.data,
       limits: context.limits,
       realtorId: context.realtorId
+    });
+    logInfo("realtor.project.create", {
+      developerSlug: parsed.data.developerSlug,
+      durationMs: Date.now() - startedAt,
+      projectId: project.id,
+      realtorId: context.realtorId,
+      slug: project.slug
     });
     revalidateCatalogPaths(
       [
@@ -48,12 +58,18 @@ export async function createProjectController(request: Request) {
     );
   } catch (error) {
     const response = getErrorResponse(error);
+    logWarn("realtor.project.create_failed", {
+      durationMs: Date.now() - startedAt,
+      status: response.status
+    });
 
     return NextResponse.json({ message: response.message }, { status: response.status });
   }
 }
 
 export async function updateProjectController(request: Request) {
+  const startedAt = Date.now();
+
   try {
     const body = await request.json().catch(() => null);
     const parsed = updateProjectSchema.safeParse(body);
@@ -66,6 +82,13 @@ export async function updateProjectController(request: Request) {
     const project = await updateProjectForRealtor({
       input: parsed.data,
       realtorId: context.realtorId
+    });
+    logInfo("realtor.project.update", {
+      developerSlug: parsed.data.developerSlug,
+      durationMs: Date.now() - startedAt,
+      projectId: project.id,
+      realtorId: context.realtorId,
+      slug: project.slug
     });
     revalidateCatalogPaths(
       [
@@ -87,12 +110,18 @@ export async function updateProjectController(request: Request) {
     });
   } catch (error) {
     const response = getErrorResponse(error);
+    logWarn("realtor.project.update_failed", {
+      durationMs: Date.now() - startedAt,
+      status: response.status
+    });
 
     return NextResponse.json({ message: response.message }, { status: response.status });
   }
 }
 
 export async function deleteProjectController(request: Request) {
+  const startedAt = Date.now();
+
   try {
     const body = await request.json().catch(() => null);
     const parsed = deleteProjectSchema.safeParse(body);
@@ -106,6 +135,13 @@ export async function deleteProjectController(request: Request) {
       developerSlug: parsed.data.developerSlug,
       projectSlug: parsed.data.projectSlug,
       realtorId: context.realtorId
+    });
+    logInfo("realtor.project.delete", {
+      developerSlug: parsed.data.developerSlug,
+      durationMs: Date.now() - startedAt,
+      projectId: project.id,
+      realtorId: context.realtorId,
+      slug: parsed.data.projectSlug
     });
     revalidateCatalogPaths(
       [
@@ -123,6 +159,10 @@ export async function deleteProjectController(request: Request) {
     });
   } catch (error) {
     const response = getErrorResponse(error);
+    logWarn("realtor.project.delete_failed", {
+      durationMs: Date.now() - startedAt,
+      status: response.status
+    });
 
     return NextResponse.json({ message: response.message }, { status: response.status });
   }

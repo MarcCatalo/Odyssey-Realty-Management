@@ -223,7 +223,7 @@ export async function updateDeveloper({
   return data;
 }
 
-export async function archiveDeveloper({
+export async function deleteDeveloper({
   realtorId,
   slug
 }: {
@@ -233,10 +233,9 @@ export async function archiveDeveloper({
   const client = getAdminClient();
   const { data, error } = await client
     .from("developers")
-    .update({ publication_status: "archived" })
+    .delete()
     .eq("realtor_id", realtorId)
     .eq("slug", slug)
-    .neq("publication_status", "archived")
     .select("id,name,slug,publication_status")
     .single();
 
@@ -345,7 +344,7 @@ export async function updateProject({
   return data;
 }
 
-export async function archiveProject({
+export async function deleteProject({
   projectId,
   realtorId
 }: {
@@ -355,10 +354,9 @@ export async function archiveProject({
   const client = getAdminClient();
   const { data, error } = await client
     .from("projects")
-    .update({ publication_status: "archived" })
+    .delete()
     .eq("realtor_id", realtorId)
     .eq("id", projectId)
-    .neq("publication_status", "archived")
     .select("id,title,slug,developer_id,publication_status")
     .single();
 
@@ -450,6 +448,96 @@ export async function attachProjectMedia({
 
   if (error) {
     throw new AppError("Media could not be attached to the project.");
+  }
+
+  return data;
+}
+
+export async function updateDeveloperLogoAsset({
+  developerId,
+  mediaAssetId,
+  realtorId
+}: {
+  developerId: string;
+  mediaAssetId: string;
+  realtorId: string;
+}) {
+  const client = getAdminClient();
+  const { data, error } = await client
+    .from("developers")
+    .update({ logo_asset_id: mediaAssetId })
+    .eq("id", developerId)
+    .eq("realtor_id", realtorId)
+    .neq("publication_status", "archived")
+    .select("id,name,slug,logo_asset_id")
+    .single();
+
+  if (error) {
+    throw new AppError("Developer logo could not be saved.");
+  }
+
+  return data;
+}
+
+export async function findProjectMediaForRealtor(realtorId: string, projectMediaId: string) {
+  const client = getAdminClient();
+  const { data, error } = await client
+    .from("project_media")
+    .select("id,project_id,media_asset_id,role")
+    .eq("id", projectMediaId)
+    .maybeSingle();
+
+  if (error) {
+    throw new AppError("Project media could not be loaded.");
+  }
+
+  if (!data) {
+    return null;
+  }
+
+  const project = await findProjectForRealtor(realtorId, data.project_id as string);
+
+  return project ? data : null;
+}
+
+export async function updateProjectMediaLabel({
+  altText,
+  caption,
+  projectMediaId
+}: {
+  altText?: string;
+  caption: string;
+  projectMediaId: string;
+}) {
+  const client = getAdminClient();
+  const { data, error } = await client
+    .from("project_media")
+    .update({
+      alt_text: altText ?? caption,
+      caption
+    })
+    .eq("id", projectMediaId)
+    .select("id,project_id,media_asset_id,role,caption,alt_text")
+    .single();
+
+  if (error) {
+    throw new AppError("Project media could not be updated.");
+  }
+
+  return data;
+}
+
+export async function deleteProjectMedia(projectMediaId: string) {
+  const client = getAdminClient();
+  const { data, error } = await client
+    .from("project_media")
+    .delete()
+    .eq("id", projectMediaId)
+    .select("id,project_id,media_asset_id,role")
+    .single();
+
+  if (error) {
+    throw new AppError("Project media could not be deleted.");
   }
 
   return data;

@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Home, MapPin } from "lucide-react";
 
+import { RealtorDeleteButton } from "@/components/realtor-delete-button";
 import type { Project } from "@/features/catalog/types";
 
 export function RealtorProjectManagementCard({
@@ -47,11 +48,19 @@ export function RealtorProjectManagementCard({
           </div>
         </div>
 
-        <div className="developer-project-footer">
+      </Link>
+      <div className="developer-project-footer realtor-project-card-actions">
+        <Link href={`/realtor/developers/${developerSlug}/projects/${project.slug}`}>
           <span>Manage project</span>
           <ArrowRight aria-hidden="true" className="h-4 w-4" />
-        </div>
-      </Link>
+        </Link>
+        <RealtorDeleteButton
+          developerSlug={developerSlug}
+          itemName={project.title}
+          kind="project"
+          projectSlug={project.slug}
+        />
+      </div>
     </article>
   );
 }

@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 
 import { RealtorImageUpload } from "@/components/realtor-image-upload";
+import { RealtorFeedbackToast } from "@/components/realtor-feedback-toast";
 import { RealtorPublishingControls } from "@/components/realtor-publishing-controls";
 import type { Developer, Project } from "@/features/catalog/types";
 import { refreshAfterMutation } from "@/lib/realtor-navigation";
@@ -119,15 +120,13 @@ export function RealtorProjectEditor({ developer, developers, project }: Realtor
       redirectTo?: string;
     } | null;
 
-    setIsDeleting(false);
-
     if (!response.ok) {
+      setIsDeleting(false);
       setShowDeleteModal(false);
       setErrorMessage(payload?.message ?? "Project could not be deleted.");
       return;
     }
 
-    setShowDeleteModal(false);
     refreshAfterMutation(
       router,
       `${payload?.redirectTo ?? `/realtor/developers/${developer.slug}`}?projectDeleted=${project.slug}`
@@ -147,7 +146,7 @@ export function RealtorProjectEditor({ developer, developers, project }: Realtor
             <AlertTriangle aria-hidden="true" className="h-8 w-8 text-[#b3261e]" />
             <h2>Delete project?</h2>
             <p id="delete-project-description">
-              This will remove {project.title} from {developer.name}. Do you want to continue?
+              This will permanently delete {project.title} and its media links from this developer profile.
             </p>
             <div className="realtor-confirm-actions">
               <button className="realtor-text-button" onClick={() => setShowDeleteModal(false)} type="button">
@@ -170,9 +169,7 @@ export function RealtorProjectEditor({ developer, developers, project }: Realtor
           </Link>
           <div className="realtor-toolbar-actions">
             {showSavedToast ? (
-              <div aria-live="polite" className="realtor-feedback-toast">
-                <span>Edits have been saved.</span>
-              </div>
+              <RealtorFeedbackToast message="Edits have been saved." />
             ) : null}
             <Link
               className="realtor-text-button"
@@ -236,7 +233,13 @@ export function RealtorProjectEditor({ developer, developers, project }: Realtor
 
             <FormSection title="Project stat strip">
               <div className="realtor-field-grid realtor-field-grid-three">
-                <ProjectInput defaultValue={project.priceRange ?? ""} isEditing={isEditing} label="Project price" name="priceRange" />
+                <ProjectInput
+                  defaultValue={project.priceRange ?? ""}
+                  isEditing={isEditing}
+                  label="Project price"
+                  name="priceRange"
+                  type="number"
+                />
                 <ProjectInput
                   defaultValue={project.totalLotsAvailable ?? ""}
                   isEditing={isEditing}
@@ -244,7 +247,7 @@ export function RealtorProjectEditor({ developer, developers, project }: Realtor
                   name="totalLotsAvailable"
                   type="number"
                 />
-                <ProjectInput defaultValue={project.levels ?? ""} isEditing={isEditing} label="Levels" name="levels" />
+                <ProjectInput defaultValue={project.levels ?? ""} isEditing={isEditing} label="Levels" name="levels" type="number" />
                 <ProjectInput defaultValue={project.lotSizeRange ?? ""} isEditing={isEditing} label="Lot size range" name="lotSizeRange" />
                 <ProjectInput
                   defaultValue={project.completionLabel ?? ""}
@@ -334,7 +337,7 @@ export function RealtorProjectEditor({ developer, developers, project }: Realtor
               <RealtorImageUpload
                 description="Main image shown on project cards, previews, and the project hero surfaces."
                 disabled={!isEditing}
-                initialImages={[project.coverImage, ...project.gallery]}
+                initialImages={[project.coverImage, ...project.gallery].filter(isPersistedProjectImage)}
                 label="Cover photo"
                 manageable
                 mediaRole="project_cover"
@@ -355,7 +358,7 @@ export function RealtorProjectEditor({ developer, developers, project }: Realtor
               <RealtorImageUpload
                 description="Site development plan image shown in the public SDP section."
                 disabled={!isEditing}
-                initialImages={[project.sdpImage]}
+                initialImages={[project.sdpImage].filter(isPersistedProjectImage)}
                 label="SDP image"
                 mediaRole="project_sdp"
                 projectId={project.id}
@@ -405,14 +408,26 @@ function ProjectInput({
       <span>{label}</span>
       <input
         defaultValue={defaultValue}
+        inputMode={type === "number" ? "numeric" : undefined}
         min={type === "number" ? 0 : undefined}
         name={name}
+        onInput={
+          type === "number"
+            ? (event) => {
+                event.currentTarget.value = event.currentTarget.value.replace(/[^\d]/g, "");
+              }
+            : undefined
+        }
         readOnly={!isEditing}
         required={["title", "description", "location", "projectType"].includes(name)}
         type={type}
       />
     </label>
   );
+}
+
+function isPersistedProjectImage(image: Project["coverImage"]) {
+  return !image.id.startsWith("fallback-");
 }
 
 function ProjectTextarea({

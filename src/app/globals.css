@@ -348,7 +348,14 @@ svg {
     font-weight: 900;
     height: 4.8rem;
     justify-content: center;
+    overflow: hidden;
+    position: relative;
     width: 4.8rem;
+  }
+
+  .public-developer-card-initials img,
+  .profile-mark img {
+    padding: 0.35rem;
   }
 
   .public-developer-card-count {
@@ -762,6 +769,8 @@ svg {
     height: 5rem;
     justify-content: center;
     line-height: 1;
+    overflow: hidden;
+    position: relative;
     width: 5rem;
   }
 
@@ -880,18 +889,25 @@ svg {
     display: flex;
     gap: 1rem;
     min-width: 0;
+    padding: 0.25rem 0.75rem;
   }
 
   .profile-stat-icon {
     color: theme("colors.sprout");
+    flex: 0 0 1.75rem;
     height: 1.75rem;
     width: 1.75rem;
   }
 
+  .profile-stat-item > div {
+    min-width: 0;
+  }
+
   .profile-stat-value {
-    font-size: 1.5rem;
+    font-size: clamp(1.15rem, 1.8vw, 1.5rem);
     font-weight: 900;
     line-height: 1;
+    overflow-wrap: anywhere;
   }
 
   .profile-stat-label {
@@ -1130,6 +1146,41 @@ svg {
     transition: transform 150ms var(--ease-out-expo);
   }
 
+  .realtor-project-card-actions {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    padding: 0;
+  }
+
+  .realtor-project-card-actions a,
+  .realtor-project-card-actions button {
+    align-items: center;
+    background: theme("colors.bone");
+    border: 0;
+    color: theme("colors.canopy");
+    cursor: pointer;
+    display: inline-flex;
+    gap: 0.5rem;
+    justify-content: center;
+    min-height: 2.75rem;
+    padding: 0.75rem 1rem;
+    transition:
+      background 150ms var(--ease-out-expo),
+      color 150ms var(--ease-out-expo);
+  }
+
+  .realtor-project-card-actions button {
+    border-left: 3px solid theme("colors.canopy");
+  }
+
+  .realtor-project-card-actions a:hover,
+  .realtor-project-card-actions a:focus-visible,
+  .realtor-project-card-actions button:hover,
+  .realtor-project-card-actions button:focus-visible {
+    background: theme("colors.sprout");
+    color: theme("colors.canopy");
+  }
+
   .developer-project-card:hover .developer-project-footer svg,
   .developer-project-card:has(:focus-visible) .developer-project-footer svg,
   .card-panel:hover .project-card-footer svg,
@@ -1351,6 +1402,7 @@ svg {
     display: flex;
     gap: 1rem;
     min-width: 0;
+    padding: 0.25rem 0.75rem;
   }
 
   .project-stat-icon {
@@ -1366,9 +1418,10 @@ svg {
 
   .project-stat-value {
     color: theme("colors.canopy");
-    font-size: 1.5rem;
+    font-size: clamp(1.15rem, 1.8vw, 1.5rem);
     font-weight: 900;
     line-height: 1;
+    overflow-wrap: anywhere;
   }
 
   .project-stat-label {
@@ -1526,11 +1579,11 @@ svg {
 
   .project-gallery-inspector {
     align-items: center;
-    background: transparent;
+    background: rgb(29 50 21 / 52%);
     display: flex;
     inset: 0;
     justify-content: center;
-    padding: 4.5rem 1.25rem 1.25rem;
+    padding: 3rem 1.25rem 1.25rem;
     position: fixed;
     z-index: 1000;
   }
@@ -1541,10 +1594,10 @@ svg {
     border: 3px solid theme("colors.canopy");
     display: grid;
     box-shadow: 8px 8px 0 rgb(29 50 21 / 22%);
-    max-height: calc(100vh - 7rem);
-    max-width: min(60rem, 100%);
+    max-height: calc(100vh - 4.5rem);
+    max-width: min(86rem, 100%);
     overflow: hidden;
-    width: min(56rem, 100%);
+    width: min(82rem, 100%);
   }
 
   .project-gallery-inspector-closing .project-gallery-expanded {
@@ -1556,6 +1609,20 @@ svg {
     background: theme("colors.grove");
     min-height: 0;
     position: relative;
+  }
+
+  .project-gallery-empty {
+    align-items: center;
+    background: white;
+    border: 3px dashed theme("colors.canopy");
+    color: theme("colors.canopy");
+    display: flex;
+    font-size: 0.9rem;
+    font-weight: 900;
+    justify-content: center;
+    min-height: 14rem;
+    padding: 1.5rem;
+    text-align: center;
   }
 
   .project-gallery-expanded-caption {
@@ -1589,6 +1656,27 @@ svg {
     background: white;
     border: 3px solid theme("colors.canopy");
     display: grid;
+  }
+
+  .project-sdp-image-button {
+    background: white;
+    border: 0;
+    color: theme("colors.bone");
+    cursor: pointer;
+    min-height: 22rem;
+    overflow: hidden;
+    padding: 1.5rem;
+    position: relative;
+    text-align: left;
+  }
+
+  .project-sdp-image-button img {
+    transition: transform 180ms var(--ease-out-expo);
+  }
+
+  .project-sdp-image-button:hover img,
+  .project-sdp-image-button:focus-visible img {
+    transform: scale(1.03);
   }
 
   .project-plan {
@@ -2008,6 +2096,39 @@ svg {
     display: grid;
     gap: 1rem;
     margin-top: 2rem;
+  }
+
+  .realtor-login-loading {
+    align-items: center;
+    background: #d8e9a8;
+    border: 3px solid theme("colors.canopy");
+    color: theme("colors.canopy");
+    display: flex;
+    gap: 1rem;
+    padding: 0.85rem 1rem;
+  }
+
+  .realtor-login-loading > span {
+    animation: realtor-login-pulse 900ms ease-in-out infinite alternate;
+    background: theme("colors.canopy");
+    display: block;
+    height: 2.25rem;
+    width: 2.25rem;
+  }
+
+  .realtor-login-loading strong {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .realtor-login-loading p {
+    color: theme("colors.canopy");
+    font-size: 0.78rem;
+    font-weight: 800;
+    margin-top: 0.2rem;
   }
 
   .realtor-login-form label > span {
@@ -4851,6 +4972,18 @@ svg {
   to {
     opacity: 0;
     transform: translateY(-4px);
+  }
+}
+
+@keyframes realtor-login-pulse {
+  from {
+    opacity: 0.45;
+    transform: scale(0.82);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 

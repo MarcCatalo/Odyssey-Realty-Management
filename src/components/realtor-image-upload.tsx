@@ -11,6 +11,7 @@ import { refreshAfterMutation } from "@/lib/realtor-navigation";
 type InitialImage = {
   alt: string;
   caption?: string;
+  id?: string;
   src: string;
 };
 
@@ -22,8 +23,10 @@ type RealtorImageUploadProps = {
   initialImages?: InitialImage[];
   label: string;
   manageable?: boolean;
-  mediaRole?: "project_cover" | "project_gallery" | "project_sdp";
+  developerSlug?: string;
+  mediaRole?: "developer_logo" | "project_cover" | "project_gallery" | "project_sdp";
   multiple?: boolean;
+  onPendingFilesChange?: (files: File[]) => void;
   projectId?: string;
   variant?: "logo" | "wide" | "gallery";
 };
@@ -36,8 +39,10 @@ export function RealtorImageUpload({
   initialImages = [],
   label,
   manageable = false,
+  developerSlug,
   mediaRole,
   multiple = false,
+  onPendingFilesChange,
   projectId,
   variant = "wide"
 }: RealtorImageUploadProps) {
@@ -54,6 +59,7 @@ export function RealtorImageUpload({
   const [editingPhotoIndex, setEditingPhotoIndex] = useState<number | null>(null);
   const [photoLabels, setPhotoLabels] = useState<Record<number, string>>({});
   const [isUploading, setIsUploading] = useState(false);
+  const [isManagingMedia, setIsManagingMedia] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -116,7 +122,11 @@ export function RealtorImageUpload({
   }
 
   async function uploadFiles(files: File[]) {
-    if (!projectId || !mediaRole || files.length === 0) {
+    const canUploadProjectMedia = projectId && mediaRole && mediaRole !== "developer_logo";
+    const canUploadDeveloperLogo = developerSlug && mediaRole === "developer_logo";
+
+    if ((!canUploadProjectMedia && !canUploadDeveloperLogo) || files.length === 0) {
+      onPendingFilesChange?.(files);
       return;
     }
 
@@ -126,10 +136,17 @@ export function RealtorImageUpload({
     for (const file of files) {
       const formData = new FormData();
       formData.set("file", file);
-      formData.set("projectId", projectId);
       formData.set("role", mediaRole);
       formData.set("altText", file.name);
       formData.set("caption", file.name.replace(/\.[^.]+$/, ""));
+
+      if (projectId) {
+        formData.set("projectId", projectId);
+      }
+
+      if (developerSlug) {
+        formData.set("developerSlug", developerSlug);
+      }
 
       const response = await fetch("/api/realtor/media", {
         body: formData,
@@ -146,6 +163,87 @@ export function RealtorImageUpload({
 
     setIsUploading(false);
     setSelectedFiles([]);
+    refreshAfterMutation(router);
+  }
+
+  function getPersistedProjectMediaId(image: InitialImage) {
+    const [, mediaId] = image.id?.split(":") ?? [];
+
+    return mediaId;
+  }
+
+  async function savePhotoLabel(image: InitialImage, index: number) {
+    const projectMediaId = getPersistedProjectMediaId(image);
+    const caption = getPhotoLabel(image, index).trim();
+
+    if (!projectMediaId || !caption) {
+      setEditingPhotoIndex(null);
+      return;
+    }
+
+    setIsManagingMedia(true);
+    setErrorMessage(null);
+
+    const response = await fetch("/api/realtor/media", {
+      body: JSON.stringify({
+        altText: caption,
+        caption,
+        projectMediaId
+      }),
+      headers: {
+        "Content-Type": "application/json"
+      },
+      method: "PATCH"
+    });
+    const payload = (await response.json().catch(() => null)) as { message?: string } | null;
+
+    setIsManagingMedia(false);
+
+    if (!response.ok) {
+      setErrorMessage(payload?.message ?? "Photo name could not be saved.");
+      return;
+    }
+
+    setEditingPhotoIndex(null);
+    refreshAfterMutation(router);
+  }
+
+  async function deletePhotos(indexes: Set<number>) {
+    const mediaIds = Array.from(indexes)
+      .map((index) => previewImages[index])
+      .map((image) => (image ? getPersistedProjectMediaId(image) : undefined))
+      .filter((mediaId): mediaId is string => Boolean(mediaId));
+
+    if (mediaIds.length === 0) {
+      setShowDeleteConfirm(false);
+      setSelectedPhotoIndexes(new Set());
+      return;
+    }
+
+    setIsManagingMedia(true);
+    setErrorMessage(null);
+
+    for (const projectMediaId of mediaIds) {
+      const response = await fetch("/api/realtor/media", {
+        body: JSON.stringify({ projectMediaId }),
+        headers: {
+          "Content-Type": "application/json"
+        },
+        method: "DELETE"
+      });
+      const payload = (await response.json().catch(() => null)) as { message?: string } | null;
+
+      if (!response.ok) {
+        setIsManagingMedia(false);
+        setErrorMessage(payload?.message ?? "Selected photos could not be deleted.");
+        return;
+      }
+    }
+
+    setIsManagingMedia(false);
+    setShowDeleteConfirm(false);
+    setSelectedPhotoIndexes(new Set());
+    setIsMultiSelecting(false);
     refreshAfterMutation(router);
   }
 
@@ -252,7 +350,8 @@ export function RealtorImageUpload({
                               }
                               onKeyDown={(event) => {
                                 if (event.key === "Enter") {
-                                  setEditingPhotoIndex(null);
+                                  event.preventDefault();
+                                  void savePhotoLabel(image, index);
                                 }
                               }}
                               type="text"
@@ -265,11 +364,11 @@ export function RealtorImageUpload({
                         </div>
                         <div className="realtor-manager-photo-actions">
                           {multiple ? (
-                            <button
-                              disabled={disabled}
+                          <button
+                              disabled={disabled || isManagingMedia}
                               onClick={() => {
                                 if (editingPhotoIndex === index) {
-                                  setEditingPhotoIndex(null);
+                                  void savePhotoLabel(image, index);
                                 } else {
                                   setEditingPhotoIndex(index);
                                 }
@@ -292,7 +391,7 @@ export function RealtorImageUpload({
                           {multiple ? (
                             <button
                               className="realtor-media-delete"
-                              disabled={disabled}
+                              disabled={disabled || isManagingMedia}
                               onClick={() => {
                                 setSelectedPhotoIndexes(new Set([index]));
                                 setShowDeleteConfirm(true);
@@ -329,9 +428,14 @@ export function RealtorImageUpload({
                       <button className="realtor-text-button" onClick={() => setShowDeleteConfirm(false)} type="button">
                         Cancel
                       </button>
-                      <button className="realtor-danger-button" onClick={() => setShowDeleteConfirm(false)} type="button">
+                      <button
+                        className="realtor-danger-button"
+                        disabled={isManagingMedia}
+                        onClick={() => void deletePhotos(selectedPhotoIndexes)}
+                        type="button"
+                      >
                         <Trash2 aria-hidden="true" className="h-4 w-4" />
-                        Delete photos
+                        {isManagingMedia ? "Deleting..." : "Delete photos"}
                       </button>
                     </div>
                   </div>
@@ -386,11 +490,12 @@ export function RealtorImageUpload({
           disabled={disabled || isUploading}
           id={inputId}
           multiple={multiple}
-          onChange={(event) => {
-            const files = Array.from(event.target.files ?? []);
-            setSelectedFiles(files);
-            void uploadFiles(files);
-          }}
+        onChange={(event) => {
+          const files = Array.from(event.target.files ?? []);
+          setSelectedFiles(files);
+          onPendingFilesChange?.(files);
+          void uploadFiles(files);
+        }}
           type="file"
         />
         {selectedFiles.length > 0 ? (
