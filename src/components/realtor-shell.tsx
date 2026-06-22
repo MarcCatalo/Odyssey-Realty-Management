@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Suspense } from "react";
 import {
   ExternalLink,
   Home,
@@ -12,6 +13,8 @@ import {
 } from "lucide-react";
 
 import { RealtorLogoutButton } from "@/components/realtor-logout-button";
+import { NavigationPendingIndicator } from "@/components/navigation-pending-indicator";
+import { RealtorRouteToast } from "@/components/realtor-route-toast";
 import { cn } from "@/lib/utils";
 
 type RealtorShellProps = {
@@ -29,13 +32,25 @@ export function RealtorShell({ children }: RealtorShellProps) {
   const pathname = usePathname();
 
   if (pathname === "/realtor/login") {
-    return <>{children}</>;
+    return (
+      <>
+        <Suspense fallback={null}>
+          <NavigationPendingIndicator />
+          <RealtorRouteToast />
+        </Suspense>
+        {children}
+      </>
+    );
   }
 
   const active = getActiveSection(pathname);
 
   return (
     <div className="min-h-screen bg-bone text-canopy">
+      <Suspense fallback={null}>
+        <NavigationPendingIndicator />
+        <RealtorRouteToast />
+      </Suspense>
       <a
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:bg-sprout focus:px-4 focus:py-2 focus:font-black"
         href="#realtor-content"

@@ -2,6 +2,8 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { AppError } from "@/server/errors";
 import type { CreateDeveloperInput } from "@/server/validators/realtor-developer";
 import type { CreateProjectInput } from "@/server/validators/realtor-project";
+import type { UpdateDeveloperInput } from "@/server/validators/realtor-developer";
+import type { UpdateProjectInput } from "@/server/validators/realtor-project";
 
 type SupabaseAdminClient = NonNullable<ReturnType<typeof createServerSupabaseClient>>;
 
@@ -116,6 +118,30 @@ export async function findDeveloperBySlug(realtorId: string, slug: string) {
   return data;
 }
 
+export async function findProjectBySlugs(realtorId: string, developerSlug: string, projectSlug: string) {
+  const client = getAdminClient();
+  const developer = await findDeveloperBySlug(realtorId, developerSlug);
+
+  if (!developer) {
+    return null;
+  }
+
+  const { data, error } = await client
+    .from("projects")
+    .select("id,title,slug,developer_id")
+    .eq("realtor_id", realtorId)
+    .eq("developer_id", developer.id)
+    .eq("slug", projectSlug)
+    .neq("publication_status", "archived")
+    .maybeSingle();
+
+  if (error) {
+    throw new AppError("Project could not be loaded.");
+  }
+
+  return data ? { ...data, developer } : null;
+}
+
 export async function findProjectForRealtor(realtorId: string, projectId: string) {
   const client = getAdminClient();
   const { data, error } = await client
@@ -164,6 +190,63 @@ export async function insertDeveloper({
   return data;
 }
 
+export async function updateDeveloper({
+  input,
+  realtorId,
+  slug
+}: {
+  input: UpdateDeveloperInput;
+  realtorId: string;
+  slug: string;
+}) {
+  const client = getAdminClient();
+  const { data, error } = await client
+    .from("developers")
+    .update({
+      name: input.name,
+      slug,
+      specialty: input.specialty,
+      coverage: input.coverage,
+      description: input.description,
+      publication_status: input.publicationStatus
+    })
+    .eq("realtor_id", realtorId)
+    .eq("slug", input.slug)
+    .neq("publication_status", "archived")
+    .select("id,name,slug,publication_status")
+    .single();
+
+  if (error) {
+    throw new AppError("Developer could not be updated.");
+  }
+
+  return data;
+}
+
+export async function archiveDeveloper({
+  realtorId,
+  slug
+}: {
+  realtorId: string;
+  slug: string;
+}) {
+  const client = getAdminClient();
+  const { data, error } = await client
+    .from("developers")
+    .update({ publication_status: "archived" })
+    .eq("realtor_id", realtorId)
+    .eq("slug", slug)
+    .neq("publication_status", "archived")
+    .select("id,name,slug,publication_status")
+    .single();
+
+  if (error) {
+    throw new AppError("Developer could not be deleted.");
+  }
+
+  return data;
+}
+
 export async function insertProject({
   developerId,
   input,
@@ -206,6 +289,81 @@ export async function insertProject({
 
   if (error) {
     throw new AppError("Project could not be created.");
+  }
+
+  return data;
+}
+
+export async function updateProject({
+  developerId,
+  input,
+  projectId,
+  realtorId,
+  slug
+}: {
+  developerId: string;
+  input: UpdateProjectInput;
+  projectId: string;
+  realtorId: string;
+  slug: string;
+}) {
+  const client = getAdminClient();
+  const { data, error } = await client
+    .from("projects")
+    .update({
+      developer_id: developerId,
+      title: input.title,
+      slug,
+      description: input.description,
+      location: input.location,
+      project_type: input.projectType,
+      status_label: input.statusLabel,
+      price_range: input.priceRange,
+      total_lots_available: input.totalLotsAvailable ?? null,
+      levels: input.levels,
+      lot_size_range: input.lotSizeRange,
+      completion_label: input.completionLabel,
+      map_address: input.mapAddress,
+      google_maps_url: input.googleMapsUrl,
+      total_site_area: input.totalSiteArea,
+      road_reserve: input.roadReserve,
+      common_zones: input.commonZones,
+      zoning: input.zoning,
+      sdp_reference: input.sdpReference,
+      publication_status: input.publicationStatus
+    })
+    .eq("realtor_id", realtorId)
+    .eq("id", projectId)
+    .neq("publication_status", "archived")
+    .select("id,title,slug,developer_id,publication_status")
+    .single();
+
+  if (error) {
+    throw new AppError("Project could not be updated.");
+  }
+
+  return data;
+}
+
+export async function archiveProject({
+  projectId,
+  realtorId
+}: {
+  projectId: string;
+  realtorId: string;
+}) {
+  const client = getAdminClient();
+  const { data, error } = await client
+    .from("projects")
+    .update({ publication_status: "archived" })
+    .eq("realtor_id", realtorId)
+    .eq("id", projectId)
+    .neq("publication_status", "archived")
+    .select("id,title,slug,developer_id,publication_status")
+    .single();
+
+  if (error) {
+    throw new AppError("Project could not be deleted.");
   }
 
   return data;

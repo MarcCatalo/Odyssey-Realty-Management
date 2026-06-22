@@ -8,6 +8,7 @@ import { ArrowLeft, Building2, Save } from "lucide-react";
 import { RealtorImageUpload } from "@/components/realtor-image-upload";
 import { RealtorPublishingControls } from "@/components/realtor-publishing-controls";
 import type { Developer } from "@/features/catalog/types";
+import { refreshAfterMutation } from "@/lib/realtor-navigation";
 
 type RealtorNewProjectFormProps = {
   developers: Developer[];
@@ -96,7 +97,7 @@ export function RealtorNewProjectForm({
       return;
     }
 
-    router.push(payload?.redirectTo ?? "/realtor/developers");
+    refreshAfterMutation(router, payload?.redirectTo ?? "/realtor/developers");
   }
 
   return (

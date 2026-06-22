@@ -7,6 +7,7 @@ import { ArrowLeft, Building2, Save } from "lucide-react";
 
 import { RealtorImageUpload } from "@/components/realtor-image-upload";
 import { RealtorPublishingControls } from "@/components/realtor-publishing-controls";
+import { refreshAfterMutation } from "@/lib/realtor-navigation";
 
 const profileFields = [
   {
@@ -62,7 +63,7 @@ export function RealtorNewDeveloperForm() {
       return;
     }
 
-    router.push(payload?.redirectTo ?? "/realtor/developers");
+    refreshAfterMutation(router, payload?.redirectTo ?? "/realtor/developers");
   }
 
   return (

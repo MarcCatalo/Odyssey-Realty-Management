@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { type ReactNode, useEffect, useState } from "react";
+import { type FormEvent, type ReactNode, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   AlertTriangle,
@@ -18,19 +18,23 @@ import {
 
 import { RealtorImageUpload } from "@/components/realtor-image-upload";
 import { RealtorPublishingControls } from "@/components/realtor-publishing-controls";
-import { developers } from "@/features/catalog/data";
 import type { Developer, Project } from "@/features/catalog/types";
+import { refreshAfterMutation } from "@/lib/realtor-navigation";
 
 type RealtorProjectEditorProps = {
   developer: Developer;
+  developers: Developer[];
   project: Project;
 };
 
-export function RealtorProjectEditor({ developer, project }: RealtorProjectEditorProps) {
+export function RealtorProjectEditor({ developer, developers, project }: RealtorProjectEditorProps) {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [showSavedToast, setShowSavedToast] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (!showSavedToast) {
@@ -44,14 +48,90 @@ export function RealtorProjectEditor({ developer, project }: RealtorProjectEdito
     return () => window.clearTimeout(timeoutId);
   }, [showSavedToast]);
 
-  function handleSave() {
+  async function handleSave(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setErrorMessage(null);
+    setIsSaving(true);
+
+    const formData = new FormData(event.currentTarget);
+    const response = await fetch("/api/realtor/projects", {
+      body: JSON.stringify({
+        commonZones: formData.get("commonZones"),
+        completionLabel: formData.get("completionLabel"),
+        currentDeveloperSlug: developer.slug,
+        description: formData.get("description"),
+        developerSlug: formData.get("developerSlug"),
+        googleMapsUrl: formData.get("googleMapsUrl"),
+        levels: formData.get("levels"),
+        location: formData.get("location"),
+        lotSizeRange: formData.get("lotSizeRange"),
+        mapAddress: formData.get("mapAddress"),
+        priceRange: formData.get("priceRange"),
+        projectSlug: project.slug,
+        projectType: formData.get("projectType"),
+        publicationStatus: formData.get("publicationStatus"),
+        roadReserve: formData.get("roadReserve"),
+        sdpReference: formData.get("sdpReference"),
+        statusLabel: formData.get("statusLabel"),
+        title: formData.get("title"),
+        totalLotsAvailable: formData.get("totalLotsAvailable") || null,
+        totalSiteArea: formData.get("totalSiteArea"),
+        zoning: formData.get("zoning")
+      }),
+      headers: {
+        "Content-Type": "application/json"
+      },
+      method: "PATCH"
+    });
+    const payload = (await response.json().catch(() => null)) as {
+      message?: string;
+      redirectTo?: string;
+    } | null;
+
+    setIsSaving(false);
+
+    if (!response.ok) {
+      setErrorMessage(payload?.message ?? "Project could not be updated.");
+      return;
+    }
+
     setIsEditing(false);
     setShowSavedToast(true);
+    refreshAfterMutation(router, payload?.redirectTo);
   }
 
-  function handleDeleteConfirm() {
+  async function handleDeleteConfirm() {
+    setErrorMessage(null);
+    setIsDeleting(true);
+
+    const response = await fetch("/api/realtor/projects", {
+      body: JSON.stringify({
+        developerSlug: developer.slug,
+        projectSlug: project.slug
+      }),
+      headers: {
+        "Content-Type": "application/json"
+      },
+      method: "DELETE"
+    });
+    const payload = (await response.json().catch(() => null)) as {
+      message?: string;
+      redirectTo?: string;
+    } | null;
+
+    setIsDeleting(false);
+
+    if (!response.ok) {
+      setShowDeleteModal(false);
+      setErrorMessage(payload?.message ?? "Project could not be deleted.");
+      return;
+    }
+
     setShowDeleteModal(false);
-    router.push(`/realtor/developers/${developer.slug}?projectDeleted=${project.slug}`);
+    refreshAfterMutation(
+      router,
+      `${payload?.redirectTo ?? `/realtor/developers/${developer.slug}`}?projectDeleted=${project.slug}`
+    );
   }
 
   return (
@@ -73,9 +153,9 @@ export function RealtorProjectEditor({ developer, project }: RealtorProjectEdito
               <button className="realtor-text-button" onClick={() => setShowDeleteModal(false)} type="button">
                 Cancel
               </button>
-              <button className="realtor-danger-button" onClick={handleDeleteConfirm} type="button">
+              <button className="realtor-danger-button" disabled={isDeleting} onClick={handleDeleteConfirm} type="button">
                 <Trash2 aria-hidden="true" className="h-4 w-4" />
-                Delete project
+                {isDeleting ? "Deleting..." : "Delete project"}
               </button>
             </div>
           </div>
@@ -107,9 +187,9 @@ export function RealtorProjectEditor({ developer, project }: RealtorProjectEdito
               Edit project
             </button>
             {isEditing ? (
-              <button className="realtor-save-button" onClick={handleSave} type="button">
+              <button className="realtor-save-button" disabled={isSaving} form="edit-project-form" type="submit">
                 <Save aria-hidden="true" className="h-4 w-4" />
-                Save changes
+                {isSaving ? "Saving..." : "Save changes"}
               </button>
             ) : null}
             <button className="realtor-danger-button" onClick={() => setShowDeleteModal(true)} type="button">
@@ -119,7 +199,13 @@ export function RealtorProjectEditor({ developer, project }: RealtorProjectEdito
           </div>
         </div>
 
-        <div className="realtor-form-grid">
+        {errorMessage ? (
+          <p className="realtor-form-error reveal" role="alert">
+            {errorMessage}
+          </p>
+        ) : null}
+
+        <form className="realtor-form-grid" id="edit-project-form" onSubmit={handleSave}>
           <section className="realtor-form-panel reveal scroll-reveal">
             <div className="realtor-section-heading realtor-form-heading">
               <h2>Project details</h2>
@@ -128,7 +214,7 @@ export function RealtorProjectEditor({ developer, project }: RealtorProjectEdito
 
             <label className="realtor-field realtor-field-full realtor-field-start realtor-field-contained">
               <span>Publish under developer</span>
-              <select defaultValue={developer.slug} disabled={!isEditing}>
+              <select defaultValue={developer.slug} disabled={!isEditing} name="developerSlug" required>
                 {developers.map((developerOption) => (
                   <option key={developerOption.id} value={developerOption.slug}>
                     {developerOption.name}
@@ -139,44 +225,47 @@ export function RealtorProjectEditor({ developer, project }: RealtorProjectEdito
 
             <FormSection title="Public project header">
               <div className="realtor-field-grid realtor-field-grid-balanced">
-                <ProjectInput defaultValue={project.title} isEditing={isEditing} label="Project title" />
-                <ProjectInput defaultValue={project.statusLabel ?? ""} isEditing={isEditing} label="Status label" />
-                <ProjectInput defaultValue={project.projectType} isEditing={isEditing} label="Project type" />
-                <ProjectInput defaultValue={project.location} isEditing={isEditing} label="Project location" />
+                <ProjectInput defaultValue={project.title} isEditing={isEditing} label="Project title" name="title" />
+                <ProjectInput defaultValue={project.statusLabel ?? ""} isEditing={isEditing} label="Status label" name="statusLabel" />
+                <ProjectInput defaultValue={project.projectType} isEditing={isEditing} label="Project type" name="projectType" />
+                <ProjectInput defaultValue={project.location} isEditing={isEditing} label="Project location" name="location" />
               </div>
 
-              <ProjectTextarea defaultValue={project.description} isEditing={isEditing} label="Project description" />
+              <ProjectTextarea defaultValue={project.description} isEditing={isEditing} label="Project description" name="description" />
             </FormSection>
 
             <FormSection title="Project stat strip">
               <div className="realtor-field-grid realtor-field-grid-three">
-                <ProjectInput defaultValue={project.priceRange ?? ""} isEditing={isEditing} label="Project price" />
+                <ProjectInput defaultValue={project.priceRange ?? ""} isEditing={isEditing} label="Project price" name="priceRange" />
                 <ProjectInput
                   defaultValue={project.totalLotsAvailable ?? ""}
                   isEditing={isEditing}
                   label="Total lots available"
+                  name="totalLotsAvailable"
                   type="number"
                 />
-                <ProjectInput defaultValue={project.levels ?? ""} isEditing={isEditing} label="Levels" />
-                <ProjectInput defaultValue={project.lotSizeRange ?? ""} isEditing={isEditing} label="Lot size range" />
+                <ProjectInput defaultValue={project.levels ?? ""} isEditing={isEditing} label="Levels" name="levels" />
+                <ProjectInput defaultValue={project.lotSizeRange ?? ""} isEditing={isEditing} label="Lot size range" name="lotSizeRange" />
                 <ProjectInput
                   defaultValue={project.completionLabel ?? ""}
                   isEditing={isEditing}
                   label="Completion label"
+                  name="completionLabel"
                 />
               </div>
             </FormSection>
 
             <FormSection title="Site development plan details">
               <div className="realtor-field-grid realtor-field-grid-balanced">
-                <ProjectInput defaultValue={project.totalSiteArea ?? ""} isEditing={isEditing} label="Total site area" />
-                <ProjectInput defaultValue={project.roadReserve ?? ""} isEditing={isEditing} label="Road reserve" />
-                <ProjectInput defaultValue={project.commonZones ?? ""} isEditing={isEditing} label="Common zones" />
-                <ProjectInput defaultValue={project.zoning ?? ""} isEditing={isEditing} label="Zoning" />
+                <ProjectInput defaultValue={project.totalSiteArea ?? ""} isEditing={isEditing} label="Total site area" name="totalSiteArea" />
+                <ProjectInput defaultValue={project.roadReserve ?? ""} isEditing={isEditing} label="Road reserve" name="roadReserve" />
+                <ProjectInput defaultValue={project.commonZones ?? ""} isEditing={isEditing} label="Common zones" name="commonZones" />
+                <ProjectInput defaultValue={project.zoning ?? ""} isEditing={isEditing} label="Zoning" name="zoning" />
                 <ProjectInput
                   defaultValue={project.sdpReference ?? project.sdpImage.caption}
                   isEditing={isEditing}
                   label="SDP reference"
+                  name="sdpReference"
                 />
               </div>
             </FormSection>
@@ -187,12 +276,14 @@ export function RealtorProjectEditor({ developer, project }: RealtorProjectEdito
                   defaultValue={project.googleMapsUrl}
                   isEditing={isEditing}
                   label="Google Maps link"
+                  name="googleMapsUrl"
                   type="url"
                 />
                 <ProjectInput
                   defaultValue={project.mapAddress ?? project.location}
                   isEditing={isEditing}
                   label="Map address"
+                  name="mapAddress"
                 />
               </div>
             </FormSection>
@@ -211,8 +302,9 @@ export function RealtorProjectEditor({ developer, project }: RealtorProjectEdito
             </div>
 
             <RealtorPublishingControls
-              defaultPublished
+              defaultPublished={project.publicationStatus === "published"}
               draftLabel="Keep as draft"
+              inputName="publicationStatus"
               publishedLabel="Published on public catalog"
             />
 
@@ -245,6 +337,8 @@ export function RealtorProjectEditor({ developer, project }: RealtorProjectEdito
                 initialImages={[project.coverImage, ...project.gallery]}
                 label="Cover photo"
                 manageable
+                mediaRole="project_cover"
+                projectId={project.id}
                 variant="wide"
               />
               <RealtorImageUpload
@@ -253,7 +347,9 @@ export function RealtorProjectEditor({ developer, project }: RealtorProjectEdito
                 initialImages={project.gallery}
                 label="House gallery photos"
                 manageable
+                mediaRole="project_gallery"
                 multiple
+                projectId={project.id}
                 variant="gallery"
               />
               <RealtorImageUpload
@@ -261,11 +357,13 @@ export function RealtorProjectEditor({ developer, project }: RealtorProjectEdito
                 disabled={!isEditing}
                 initialImages={[project.sdpImage]}
                 label="SDP image"
+                mediaRole="project_sdp"
+                projectId={project.id}
                 variant="wide"
               />
             </div>
           </section>
-        </div>
+        </form>
       </div>
     </section>
   );
@@ -293,17 +391,26 @@ function ProjectInput({
   defaultValue,
   isEditing,
   label,
+  name,
   type = "text"
 }: {
   defaultValue: number | string;
   isEditing: boolean;
   label: string;
+  name: string;
   type?: string;
 }) {
   return (
     <label className="realtor-field">
       <span>{label}</span>
-      <input defaultValue={defaultValue} min={type === "number" ? 0 : undefined} readOnly={!isEditing} type={type} />
+      <input
+        defaultValue={defaultValue}
+        min={type === "number" ? 0 : undefined}
+        name={name}
+        readOnly={!isEditing}
+        required={["title", "description", "location", "projectType"].includes(name)}
+        type={type}
+      />
     </label>
   );
 }
@@ -311,16 +418,18 @@ function ProjectInput({
 function ProjectTextarea({
   defaultValue,
   isEditing,
-  label
+  label,
+  name
 }: {
   defaultValue: string;
   isEditing: boolean;
   label: string;
+  name: string;
 }) {
   return (
     <label className="realtor-field realtor-field-full realtor-field-description">
       <span>{label}</span>
-      <textarea defaultValue={defaultValue} readOnly={!isEditing} rows={7} />
+      <textarea defaultValue={defaultValue} name={name} readOnly={!isEditing} required rows={7} />
     </label>
   );
 }

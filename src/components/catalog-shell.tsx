@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   ExternalLink,
   GalleryHorizontal,
@@ -12,14 +12,11 @@ import {
   Phone,
   UsersRound
 } from "lucide-react";
-import { useEffect } from "react";
+import { Suspense } from "react";
 
-import { developers, salesAgent } from "@/features/catalog/data";
-import {
-  getDeveloperBySlug,
-  getDeveloperRoute,
-  getProjectsForDeveloper
-} from "@/features/catalog/queries";
+import { NavigationPendingIndicator } from "@/components/navigation-pending-indicator";
+import { PublicCatalogAutoRefresh } from "@/components/public-catalog-auto-refresh";
+import type { Developer, Project, SalesAgent } from "@/features/catalog/types";
 import { cn } from "@/lib/utils";
 
 type CatalogShellProps = {
@@ -27,6 +24,9 @@ type CatalogShellProps = {
   active?: "home" | "developers" | "gallery" | "contact";
   activeDeveloperSlug?: string;
   activeProjectSlug?: string;
+  developers: Developer[];
+  projects: Project[];
+  salesAgent: SalesAgent;
 };
 
 const navItems = [
@@ -40,31 +40,34 @@ export function CatalogShell({
   children,
   active,
   activeDeveloperSlug,
-  activeProjectSlug
+  activeProjectSlug,
+  developers,
+  projects,
+  salesAgent
 }: CatalogShellProps) {
   const pathname = usePathname();
-  const router = useRouter();
   const routeState = getRouteState(pathname);
   const resolvedActive = active ?? routeState.active;
   const resolvedDeveloperSlug = activeDeveloperSlug ?? routeState.activeDeveloperSlug;
   const resolvedProjectSlug = activeProjectSlug ?? routeState.activeProjectSlug;
 
-  useEffect(() => {
-    if (pathname.startsWith("/admin") || pathname.startsWith("/realtor")) {
-      return;
-    }
-
-    getPrefetchRoutes().forEach((route) => {
-      router.prefetch(route);
-    });
-  }, [pathname, router]);
-
   if (pathname.startsWith("/admin") || pathname.startsWith("/realtor")) {
-    return <>{children}</>;
+    return (
+      <>
+        <Suspense fallback={null}>
+          <NavigationPendingIndicator />
+        </Suspense>
+        {children}
+      </>
+    );
   }
 
   return (
     <div className="min-h-screen bg-bone text-canopy">
+      <PublicCatalogAutoRefresh />
+      <Suspense fallback={null}>
+        <NavigationPendingIndicator />
+      </Suspense>
       <a
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:bg-sprout focus:px-4 focus:py-2 focus:font-black"
         href="#content"
@@ -78,6 +81,9 @@ export function CatalogShell({
             active={resolvedActive}
             activeDeveloperSlug={resolvedDeveloperSlug}
             activeProjectSlug={resolvedProjectSlug}
+            developers={developers}
+            projects={projects}
+            salesAgent={salesAgent}
           />
         </aside>
 
@@ -96,6 +102,9 @@ export function CatalogShell({
                   active={resolvedActive}
                   activeDeveloperSlug={resolvedDeveloperSlug}
                   activeProjectSlug={resolvedProjectSlug}
+                  developers={developers}
+                  projects={projects}
+                  salesAgent={salesAgent}
                 />
               </div>
             </details>
@@ -111,19 +120,29 @@ export function CatalogShell({
 function SidebarContent({
   active,
   activeDeveloperSlug,
-  activeProjectSlug
-}: Pick<CatalogShellProps, "active" | "activeDeveloperSlug" | "activeProjectSlug">) {
-  const activeDeveloper = activeDeveloperSlug ? getDeveloperBySlug(activeDeveloperSlug) : undefined;
+  activeProjectSlug,
+  developers,
+  projects,
+  salesAgent
+}: Pick<
+  CatalogShellProps,
+  "active" | "activeDeveloperSlug" | "activeProjectSlug" | "developers" | "projects" | "salesAgent"
+>) {
+  const activeDeveloper = activeDeveloperSlug
+    ? developers.find((developer) => developer.slug === activeDeveloperSlug)
+    : undefined;
 
   return (
     <div className="flex h-full flex-col bg-bone">
       <Link className="sidebar-brand block bg-canopy px-8 py-8 text-bone" href="/">
-        <span className="block font-display text-2xl font-black uppercase leading-[0.9] tracking-[-0.04em]">
-          MERIDIAN
-        </span>
-        <span className="block font-display text-2xl font-black uppercase leading-[0.9] tracking-[-0.04em]">
-          GROUP
-        </span>
+        {salesAgent.businessLabel.split(" ").slice(0, 2).map((part) => (
+          <span
+            className="block font-display text-2xl font-black uppercase leading-[0.9] tracking-[-0.04em]"
+            key={part}
+          >
+            {part}
+          </span>
+        ))}
       </Link>
       <div className="sidebar-kicker border-b-[3px] border-canopy bg-white px-8 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-sprout">
         DEVELOPER CATALOG
@@ -187,14 +206,16 @@ function SidebarContent({
                             style={getDisclosureStyle(developerActive, "16rem", "-10px")}
                           >
                             <div className="sidebar-subtree-inner flex flex-col">
-                              {getProjectsForDeveloper(developer.slug).map((project) => (
-                                <ProjectChildLink
-                                  active={activeProjectSlug === project.slug}
-                                  href={`/developers/${developer.slug}/projects/${project.slug}`}
-                                  key={project.id}
-                                  label={project.title}
-                                />
-                              ))}
+                              {projects
+                                .filter((project) => project.developerId === developer.id)
+                                .map((project) => (
+                                  <ProjectChildLink
+                                    active={activeProjectSlug === project.slug}
+                                    href={`/developers/${developer.slug}/projects/${project.slug}`}
+                                    key={project.id}
+                                    label={project.title}
+                                  />
+                                ))}
                             </div>
                           </div>
                         </div>
@@ -343,19 +364,8 @@ function getRouteState(pathname: string): Required<Pick<CatalogShellProps, "acti
   return { active: "home" };
 }
 
-function getPrefetchRoutes() {
-  return [
-    "/",
-    "/developers",
-    "/gallery",
-    "/contact",
-    ...developers.flatMap((developer) => [
-      getDeveloperRoute(developer.slug),
-      ...getProjectsForDeveloper(developer.slug).map(
-        (project) => `/developers/${developer.slug}/projects/${project.slug}`
-      )
-    ])
-  ];
+function getDeveloperRoute(developerSlug: string): string {
+  return `/developers/${developerSlug}`;
 }
 
 function getDisclosureStyle(isOpen: boolean, openMaxHeight: string, closedOffset: string) {

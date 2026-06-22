@@ -2,8 +2,11 @@
 
 import { useEffect, useId, useMemo, useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import { CheckSquare, ImagePlus, Pencil, RotateCcw, Trash2, Upload, X } from "lucide-react";
+
+import { refreshAfterMutation } from "@/lib/realtor-navigation";
 
 type InitialImage = {
   alt: string;
@@ -19,7 +22,9 @@ type RealtorImageUploadProps = {
   initialImages?: InitialImage[];
   label: string;
   manageable?: boolean;
+  mediaRole?: "project_cover" | "project_gallery" | "project_sdp";
   multiple?: boolean;
+  projectId?: string;
   variant?: "logo" | "wide" | "gallery";
 };
 
@@ -31,9 +36,12 @@ export function RealtorImageUpload({
   initialImages = [],
   label,
   manageable = false,
+  mediaRole,
   multiple = false,
+  projectId,
   variant = "wide"
 }: RealtorImageUploadProps) {
+  const router = useRouter();
   const inputId = useId();
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
@@ -45,6 +53,8 @@ export function RealtorImageUpload({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [editingPhotoIndex, setEditingPhotoIndex] = useState<number | null>(null);
   const [photoLabels, setPhotoLabels] = useState<Record<number, string>>({});
+  const [isUploading, setIsUploading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -103,6 +113,40 @@ export function RealtorImageUpload({
 
   function getPhotoLabel(image: InitialImage, index: number) {
     return photoLabels[index] ?? image.caption ?? image.alt;
+  }
+
+  async function uploadFiles(files: File[]) {
+    if (!projectId || !mediaRole || files.length === 0) {
+      return;
+    }
+
+    setErrorMessage(null);
+    setIsUploading(true);
+
+    for (const file of files) {
+      const formData = new FormData();
+      formData.set("file", file);
+      formData.set("projectId", projectId);
+      formData.set("role", mediaRole);
+      formData.set("altText", file.name);
+      formData.set("caption", file.name.replace(/\.[^.]+$/, ""));
+
+      const response = await fetch("/api/realtor/media", {
+        body: formData,
+        method: "POST"
+      });
+      const payload = (await response.json().catch(() => null)) as { message?: string } | null;
+
+      if (!response.ok) {
+        setErrorMessage(payload?.message ?? "Image could not be uploaded.");
+        setIsUploading(false);
+        return;
+      }
+    }
+
+    setIsUploading(false);
+    setSelectedFiles([]);
+    refreshAfterMutation(router);
   }
 
   const managerOverlay =
@@ -335,15 +379,17 @@ export function RealtorImageUpload({
       <div className="realtor-upload-actions">
         <label aria-disabled={disabled} className="realtor-upload-button" htmlFor={inputId}>
           <Upload aria-hidden="true" className="h-4 w-4" />
-          {multiple ? "Upload photos" : "Upload photo"}
+          {isUploading ? "Uploading..." : multiple ? "Upload photos" : "Upload photo"}
         </label>
         <input
           accept={accept}
-          disabled={disabled}
+          disabled={disabled || isUploading}
           id={inputId}
           multiple={multiple}
           onChange={(event) => {
-            setSelectedFiles(Array.from(event.target.files ?? []));
+            const files = Array.from(event.target.files ?? []);
+            setSelectedFiles(files);
+            void uploadFiles(files);
           }}
           type="file"
         />
@@ -366,6 +412,7 @@ export function RealtorImageUpload({
         ) : null}
       </div>
 
+      {errorMessage ? <p className="realtor-form-error" role="alert">{errorMessage}</p> : null}
       {disabled ? <p className="realtor-upload-note">Click edit before changing this image.</p> : null}
     </div>
   );

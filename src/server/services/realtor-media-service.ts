@@ -56,18 +56,18 @@ export async function uploadProjectMediaForRealtor({
   });
 
   const originalBuffer = Buffer.from(await file.arrayBuffer());
-  const compressed = await compressImage(originalBuffer);
+  const compressed = await compressImage(originalBuffer, file.type);
   const storagePath = [
     "realtors",
     realtorId,
     "projects",
     input.projectId,
     input.role,
-    `${randomUUID()}.${OUTPUT_EXTENSION}`
+    `${randomUUID()}.${compressed.extension}`
   ].join("/");
 
   await uploadObject({
-    contentType: OUTPUT_MIME_TYPE,
+    contentType: compressed.mimeType,
     data: compressed.buffer,
     path: storagePath
   });
@@ -78,7 +78,7 @@ export async function uploadProjectMediaForRealtor({
     caption: input.caption,
     fileSizeBytes: compressed.buffer.byteLength,
     height: compressed.height,
-    mimeType: OUTPUT_MIME_TYPE,
+    mimeType: compressed.mimeType,
     originalFilename: file.name,
     realtorId,
     storagePath,
@@ -99,8 +99,19 @@ export async function uploadProjectMediaForRealtor({
   };
 }
 
-async function compressImage(input: Buffer) {
+async function compressImage(input: Buffer, originalMimeType: string) {
   const sharp = await loadSharp();
+
+  if (!sharp) {
+    return {
+      buffer: input,
+      extension: getExtensionForMimeType(originalMimeType),
+      height: undefined,
+      mimeType: originalMimeType,
+      width: undefined
+    };
+  }
+
   const image = sharp(input, { failOn: "none" }).rotate();
   const metadata = await image.metadata();
   const shouldResize =
@@ -124,7 +135,9 @@ async function compressImage(input: Buffer) {
 
   return {
     buffer: data,
+    extension: OUTPUT_EXTENSION,
     height: info.height,
+    mimeType: OUTPUT_MIME_TYPE,
     width: info.width
   };
 }
@@ -135,9 +148,18 @@ async function loadSharp() {
 
     return sharpModule.default;
   } catch {
-    throw new AppError(
-      "Image compression requires a supported Node runtime before uploads can be processed.",
-      503
-    );
+    return null;
   }
+}
+
+function getExtensionForMimeType(mimeType: string) {
+  if (mimeType === "image/png") {
+    return "png";
+  }
+
+  if (mimeType === "image/webp") {
+    return "webp";
+  }
+
+  return "jpg";
 }

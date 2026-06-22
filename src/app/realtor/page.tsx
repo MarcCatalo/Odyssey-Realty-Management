@@ -10,10 +10,8 @@ import {
   UsersRound
 } from "lucide-react";
 
-import { developers, projects, salesAgent } from "@/features/catalog/data";
-
-const publishedDevelopers = developers.filter((developer) => developer.status === "published");
-const publishedProjects = projects.filter((project) => project.publicationStatus === "published");
+import { getCatalogForRealtorId, getRealtorSubscriptionLimits } from "@/features/catalog/live-queries";
+import { requireRealtorContextForPage } from "@/server/auth/realtor-session";
 
 const quickActions = [
   {
@@ -46,7 +44,17 @@ const quickActions = [
   }
 ];
 
-export default function RealtorDashboardPage() {
+export const dynamic = "force-dynamic";
+
+export default async function RealtorDashboardPage() {
+  const context = await requireRealtorContextForPage();
+  const [catalog, limits] = await Promise.all([
+    getCatalogForRealtorId(context.realtorId),
+    getRealtorSubscriptionLimits(context.realtorId)
+  ]);
+  const publishedDevelopers = catalog.developers.filter((developer) => developer.status === "published");
+  const publishedProjects = catalog.projects.filter((project) => project.publicationStatus === "published");
+  const totalProjectAllowance = limits.developerLimit * limits.projectLimitPerDeveloper;
   return (
     <>
       <section className="realtor-hero">
@@ -78,9 +86,13 @@ export default function RealtorDashboardPage() {
       <section className="realtor-stat-strip">
         <div className="realtor-stat-grid mx-auto max-w-7xl">
           <DashboardStat icon={Building2} label="Published developers" value={`${publishedDevelopers.length}`} />
-          <DashboardStat icon={UsersRound} label="Developer limit" value="4 / 10" />
+          <DashboardStat
+            icon={UsersRound}
+            label="Developer limit"
+            value={`${catalog.developers.length} / ${limits.developerLimit}`}
+          />
           <DashboardStat icon={Building2} label="Published projects" value={`${publishedProjects.length}`} />
-          <DashboardStat icon={Mail} label="Default contact" value={salesAgent.name} />
+          <DashboardStat icon={Mail} label="Default contact" value={catalog.salesAgent.name} />
         </div>
       </section>
 
@@ -121,25 +133,49 @@ export default function RealtorDashboardPage() {
         <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
           <div className="realtor-panel reveal">
             <p className="realtor-panel-kicker">Subscription usage</p>
-            <h2>Pro catalog</h2>
-            <UsageRow label="Developers" value="4 of 10 published" percent="40%" />
-            <UsageRow label="Projects" value="2 of 100 published" percent="2%" />
-            <UsageRow label="Media storage" value="18 MB of 500 MB used" percent="4%" />
+            <h2>Current catalog</h2>
+            <UsageRow
+              label="Developers"
+              value={`${catalog.developers.length} of ${limits.developerLimit} profiles used`}
+              percent={`${toPercent(catalog.developers.length, limits.developerLimit)}%`}
+            />
+            <UsageRow
+              label="Projects"
+              value={`${catalog.projects.length} of ${totalProjectAllowance} possible projects used`}
+              percent={`${toPercent(catalog.projects.length, totalProjectAllowance)}%`}
+            />
+            <UsageRow
+              label="Images"
+              value={`${limits.projectImageLimit} images allowed per project`}
+              percent="100%"
+            />
           </div>
 
           <div className="realtor-panel reveal reveal-delay-1">
             <p className="realtor-panel-kicker">Recent activity</p>
             <h2>Latest updates</h2>
             <div className="realtor-activity-list">
-              <ActivityItem title="PrimeBuild Homes updated" meta="Developer profile checked today" />
-              <ActivityItem title="Greenridge Villas published" meta="Project page available on public catalog" />
-              <ActivityItem title="Media review needed" meta="Northline Terraces has no interior gallery yet" />
+              {catalog.developers.slice(0, 3).map((developer) => (
+                <ActivityItem
+                  key={developer.id}
+                  title={`${developer.name} ${developer.status}`}
+                  meta={`${developer.projectCount} project${developer.projectCount === 1 ? "" : "s"} connected`}
+                />
+              ))}
             </div>
           </div>
         </div>
       </section>
     </>
   );
+}
+
+function toPercent(value: number, max: number) {
+  if (max <= 0) {
+    return 0;
+  }
+
+  return Math.min(100, Math.round((value / max) * 100));
 }
 
 function DashboardStat({

@@ -9,12 +9,7 @@ import {
 import { BreadcrumbBar } from "@/components/breadcrumb-bar";
 import { ContactActions } from "@/components/contact-actions";
 import { DeveloperProjectCard } from "@/components/developer-project-card";
-import {
-  getDeveloperBySlug,
-  getDeveloperContact,
-  getProjectsForDeveloper,
-  getPublishedDevelopers
-} from "@/features/catalog/queries";
+import { getPublicCatalog } from "@/features/catalog/live-queries";
 
 type DeveloperProfilePageProps = {
   params: {
@@ -22,21 +17,26 @@ type DeveloperProfilePageProps = {
   };
 };
 
-export function generateStaticParams() {
-  return getPublishedDevelopers().map((developer) => ({
-    developerSlug: developer.slug
-  }));
-}
+export const dynamic = "force-dynamic";
 
-export default function DeveloperProfilePage({ params }: DeveloperProfilePageProps) {
-  const developer = getDeveloperBySlug(params.developerSlug);
+export default async function DeveloperProfilePage({ params }: DeveloperProfilePageProps) {
+  const catalog = await getPublicCatalog();
+  const developer = catalog.developers.find(
+    (item) => item.slug === params.developerSlug && item.status === "published"
+  );
 
   if (!developer) {
     notFound();
   }
 
-  const projects = getProjectsForDeveloper(params.developerSlug);
-  const developerContact = getDeveloperContact(params.developerSlug);
+  const projects = catalog.projects.filter(
+    (project) => project.developerId === developer.id && project.publicationStatus === "published"
+  );
+  const developerContact = {
+    owner: "developer" as const,
+    name: developer.name,
+    links: developer.contactLinks.filter((link) => link.isEnabled)
+  };
   const heroCategory = developer.specialty.toLowerCase().includes("house")
     ? "Residential developer"
     : developer.specialty;

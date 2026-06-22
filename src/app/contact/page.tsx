@@ -2,9 +2,12 @@ import Image from "next/image";
 import { AtSign, Mail, Phone, UserRound } from "lucide-react";
 
 import { PageHero } from "@/components/page-hero";
-import { salesAgent } from "@/features/catalog/data";
+import { getPublicCatalog } from "@/features/catalog/live-queries";
 
-export default function ContactPage() {
+export const dynamic = "force-dynamic";
+
+export default async function ContactPage() {
+  const { salesAgent } = await getPublicCatalog();
   const directContactLinks = salesAgent.contactLinks.filter((link) =>
     ["email", "phone", "website"].includes(link.type)
   );

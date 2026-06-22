@@ -8,4 +8,14 @@ export const createDeveloperSchema = z.object({
   publicationStatus: z.enum(["draft", "published"]).default("draft")
 });
 
+export const updateDeveloperSchema = createDeveloperSchema.extend({
+  slug: z.string().trim().min(1).max(120)
+});
+
+export const deleteDeveloperSchema = z.object({
+  slug: z.string().trim().min(1).max(120)
+});
+
 export type CreateDeveloperInput = z.infer<typeof createDeveloperSchema>;
+export type UpdateDeveloperInput = z.infer<typeof updateDeveloperSchema>;
+export type DeleteDeveloperInput = z.infer<typeof deleteDeveloperSchema>;

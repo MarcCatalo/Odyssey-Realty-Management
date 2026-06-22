@@ -6,6 +6,8 @@ const iconMap = {
   phone: Phone,
   email: Mail,
   facebook: MessageCircle,
+  instagram: MessageCircle,
+  linkedin: MessageCircle,
   messenger: MessageCircle,
   whatsapp: MessageCircle,
   viber: MessageCircle,

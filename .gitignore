@@ -20,3 +20,5 @@ pnpm-debug.log*
 *.pfx
 service-account*.json
 supabase/.temp
+.codex/
+.codex-dev-server*.log

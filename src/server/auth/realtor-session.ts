@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 import { REALTOR_ACCESS_TOKEN_COOKIE } from "@/lib/realtor-auth-constants";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
@@ -81,4 +82,16 @@ export async function getRealtorContext(): Promise<RealtorContext> {
         subscription.project_image_limit_override ?? subscription.subscription_plans.project_image_limit
     }
   };
+}
+
+export async function requireRealtorContextForPage(): Promise<RealtorContext> {
+  try {
+    return await getRealtorContext();
+  } catch (error) {
+    if (error instanceof AppError && error.status === 401) {
+      redirect("/realtor/login");
+    }
+
+    throw error;
+  }
 }

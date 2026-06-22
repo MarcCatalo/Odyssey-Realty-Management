@@ -1,9 +1,18 @@
 import { NextResponse } from "next/server";
 
 import { getRealtorContext } from "@/server/auth/realtor-session";
+import { revalidateCatalogPaths } from "@/server/cache/catalog-revalidation";
 import { getErrorResponse } from "@/server/errors";
-import { createDeveloperForRealtor } from "@/server/services/realtor-developer-service";
-import { createDeveloperSchema } from "@/server/validators/realtor-developer";
+import {
+  createDeveloperForRealtor,
+  deleteDeveloperForRealtor,
+  updateDeveloperForRealtor
+} from "@/server/services/realtor-developer-service";
+import {
+  createDeveloperSchema,
+  deleteDeveloperSchema,
+  updateDeveloperSchema
+} from "@/server/validators/realtor-developer";
 
 export async function createDeveloperController(request: Request) {
   try {
@@ -20,6 +29,14 @@ export async function createDeveloperController(request: Request) {
       limits: context.limits,
       realtorId: context.realtorId
     });
+    revalidateCatalogPaths(
+      [
+        "/realtor/developers",
+        `/realtor/developers/${developer.slug}`,
+        `/developers/${developer.slug}`
+      ],
+      context.realtorId
+    );
 
     return NextResponse.json(
       {
@@ -28,6 +45,77 @@ export async function createDeveloperController(request: Request) {
       },
       { status: 201 }
     );
+  } catch (error) {
+    const response = getErrorResponse(error);
+
+    return NextResponse.json({ message: response.message }, { status: response.status });
+  }
+}
+
+export async function updateDeveloperController(request: Request) {
+  try {
+    const body = await request.json().catch(() => null);
+    const parsed = updateDeveloperSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json({ message: "Enter complete developer details." }, { status: 400 });
+    }
+
+    const context = await getRealtorContext();
+    const developer = await updateDeveloperForRealtor({
+      input: parsed.data,
+      realtorId: context.realtorId
+    });
+    revalidateCatalogPaths(
+      [
+        "/realtor/developers",
+        `/realtor/developers/${parsed.data.slug}`,
+        `/realtor/developers/${developer.slug}`,
+        `/developers/${parsed.data.slug}`,
+        `/developers/${developer.slug}`
+      ],
+      context.realtorId
+    );
+
+    return NextResponse.json({
+      developer,
+      redirectTo: `/realtor/developers/${developer.slug}`,
+      publicUrl: `/developers/${developer.slug}`
+    });
+  } catch (error) {
+    const response = getErrorResponse(error);
+
+    return NextResponse.json({ message: response.message }, { status: response.status });
+  }
+}
+
+export async function deleteDeveloperController(request: Request) {
+  try {
+    const body = await request.json().catch(() => null);
+    const parsed = deleteDeveloperSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json({ message: "Choose a developer to delete." }, { status: 400 });
+    }
+
+    const context = await getRealtorContext();
+    const developer = await deleteDeveloperForRealtor({
+      realtorId: context.realtorId,
+      slug: parsed.data.slug
+    });
+    revalidateCatalogPaths(
+      [
+        "/realtor/developers",
+        `/realtor/developers/${parsed.data.slug}`,
+        `/developers/${parsed.data.slug}`
+      ],
+      context.realtorId
+    );
+
+    return NextResponse.json({
+      developer,
+      redirectTo: "/realtor/developers"
+    });
   } catch (error) {
     const response = getErrorResponse(error);
 

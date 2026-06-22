@@ -1,5 +1,6 @@
 import { RealtorNewProjectForm } from "@/components/realtor-new-project-form";
-import { developers } from "@/features/catalog/data";
+import { getCatalogForRealtorId } from "@/features/catalog/live-queries";
+import { requireRealtorContextForPage } from "@/server/auth/realtor-session";
 
 type NewProjectPageProps = {
   searchParams?: {
@@ -7,7 +8,12 @@ type NewProjectPageProps = {
   };
 };
 
-export default function NewProjectPage({ searchParams }: NewProjectPageProps) {
+export const dynamic = "force-dynamic";
+
+export default async function NewProjectPage({ searchParams }: NewProjectPageProps) {
+  const context = await requireRealtorContextForPage();
+  const catalog = await getCatalogForRealtorId(context.realtorId);
+
   return (
     <>
       <section className="realtor-hero realtor-hero-compact">
@@ -23,7 +29,7 @@ export default function NewProjectPage({ searchParams }: NewProjectPageProps) {
         </div>
       </section>
 
-      <RealtorNewProjectForm developers={developers} selectedDeveloperSlug={searchParams?.developer} />
+      <RealtorNewProjectForm developers={catalog.developers} selectedDeveloperSlug={searchParams?.developer} />
     </>
   );
 }

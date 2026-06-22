@@ -30,4 +30,16 @@ export const createProjectSchema = z.object({
   publicationStatus: z.enum(["draft", "published"]).default("draft")
 });
 
+export const updateProjectSchema = createProjectSchema.extend({
+  currentDeveloperSlug: z.string().trim().min(1).max(120).optional(),
+  projectSlug: z.string().trim().min(1).max(160)
+});
+
+export const deleteProjectSchema = z.object({
+  developerSlug: z.string().trim().min(1).max(120),
+  projectSlug: z.string().trim().min(1).max(160)
+});
+
 export type CreateProjectInput = z.infer<typeof createProjectSchema>;
+export type UpdateProjectInput = z.infer<typeof updateProjectSchema>;
+export type DeleteProjectInput = z.infer<typeof deleteProjectSchema>;

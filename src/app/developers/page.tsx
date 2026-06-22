@@ -2,11 +2,14 @@ import { Building2 } from "lucide-react";
 
 import { DeveloperCard } from "@/components/developer-card";
 import { PageHero } from "@/components/page-hero";
-import { salesAgent } from "@/features/catalog/data";
-import { getPublishedDevelopers } from "@/features/catalog/queries";
+import { getPublicCatalog } from "@/features/catalog/live-queries";
 
-export default function DevelopersPage() {
-  const developers = getPublishedDevelopers();
+export const dynamic = "force-dynamic";
+
+export default async function DevelopersPage() {
+  const catalog = await getPublicCatalog();
+  const salesAgent = catalog.salesAgent;
+  const developers = catalog.developers.filter((developer) => developer.status === "published");
 
   return (
     <>

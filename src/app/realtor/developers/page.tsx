@@ -1,19 +1,27 @@
 import Link from "next/link";
-import { Archive, Building2, CheckCircle2, Eye, MapPin, Pencil, Plus, ShieldCheck } from "lucide-react";
+import { Building2, CheckCircle2, Eye, MapPin, Pencil, Plus, ShieldCheck } from "lucide-react";
 
-import { developers, projects, salesAgent } from "@/features/catalog/data";
+import { getCatalogForRealtorId, getRealtorSubscriptionLimits } from "@/features/catalog/live-queries";
 import type { Developer } from "@/features/catalog/types";
+import { requireRealtorContextForPage } from "@/server/auth/realtor-session";
 
-const developerLimit = 10;
-const draftDevelopers = developers.filter((developer) => developer.status === "draft");
+export const dynamic = "force-dynamic";
 
-export default function RealtorDevelopersPage({
+export default async function RealtorDevelopersPage({
   searchParams
 }: {
   searchParams?: {
     deleted?: string;
   };
 }) {
+  const context = await requireRealtorContextForPage();
+  const [catalog, limits] = await Promise.all([
+    getCatalogForRealtorId(context.realtorId),
+    getRealtorSubscriptionLimits(context.realtorId)
+  ]);
+  const developers = catalog.developers;
+  const projects = catalog.projects;
+  const draftDevelopers = developers.filter((developer) => developer.status === "draft");
   const deletedSlug = searchParams?.deleted;
   const visibleDevelopers = deletedSlug
     ? developers.filter((developer) => developer.slug !== deletedSlug)
@@ -21,7 +29,7 @@ export default function RealtorDevelopersPage({
   const visiblePublishedDevelopers = visibleDevelopers.filter(
     (developer) => developer.status === "published"
   );
-  const canAddDeveloper = visiblePublishedDevelopers.length < developerLimit;
+  const canAddDeveloper = visibleDevelopers.length < limits.developerLimit;
 
   return (
     <>
@@ -40,7 +48,7 @@ export default function RealtorDevelopersPage({
             <div className="realtor-status-card realtor-limit-card">
               <Building2 aria-hidden="true" className="h-8 w-8" />
               <h2>
-                {visiblePublishedDevelopers.length} / {developerLimit} developers
+                {visibleDevelopers.length} / {limits.developerLimit} developers
               </h2>
               <p>Current subscription allowance for published developer profiles.</p>
             </div>
@@ -57,7 +65,7 @@ export default function RealtorDevelopersPage({
           />
           <ManagementStat icon={Pencil} label="Draft profiles" value={`${draftDevelopers.length}`} />
           <ManagementStat icon={Building2} label="Published projects" value={`${projects.length}`} />
-          <ManagementStat icon={CheckCircle2} label="Default contact" value={salesAgent.name} />
+          <ManagementStat icon={CheckCircle2} label="Default contact" value={catalog.salesAgent.name} />
         </div>
       </section>
 
@@ -70,7 +78,7 @@ export default function RealtorDevelopersPage({
 
           <div className="realtor-management-grid stagger-list">
             {visibleDevelopers.map((developer) => (
-              <DeveloperManagementCard developer={developer} key={developer.id} />
+              <DeveloperManagementCard developer={developer} key={developer.id} projects={projects} />
             ))}
 
             <Link
@@ -96,7 +104,7 @@ export default function RealtorDevelopersPage({
   );
 }
 
-function DeveloperManagementCard({ developer }: { developer: Developer }) {
+function DeveloperManagementCard({ developer, projects }: { developer: Developer; projects: { developerId: string }[] }) {
   const developerProjects = projects.filter((project) => project.developerId === developer.id);
   const initials = developer.name
     .split(" ")
@@ -143,10 +151,6 @@ function DeveloperManagementCard({ developer }: { developer: Developer }) {
           <Pencil aria-hidden="true" className="h-4 w-4" />
           Manage
         </Link>
-        <button type="button">
-          <Archive aria-hidden="true" className="h-4 w-4" />
-          Archive
-        </button>
       </div>
     </article>
   );

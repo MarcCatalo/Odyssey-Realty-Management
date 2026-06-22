@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import { Eye } from "lucide-react";
 
 import { RealtorDeveloperEditor } from "@/components/realtor-developer-editor";
-import { developers, projects } from "@/features/catalog/data";
+import { getCatalogForRealtorId } from "@/features/catalog/live-queries";
+import { requireRealtorContextForPage } from "@/server/auth/realtor-session";
 
 type RealtorDeveloperEditPageProps = {
   params: {
@@ -10,14 +11,18 @@ type RealtorDeveloperEditPageProps = {
   };
 };
 
-export default function RealtorDeveloperEditPage({ params }: RealtorDeveloperEditPageProps) {
-  const developer = developers.find((item) => item.slug === params.developerSlug);
+export const dynamic = "force-dynamic";
+
+export default async function RealtorDeveloperEditPage({ params }: RealtorDeveloperEditPageProps) {
+  const context = await requireRealtorContextForPage();
+  const catalog = await getCatalogForRealtorId(context.realtorId);
+  const developer = catalog.developers.find((item) => item.slug === params.developerSlug);
 
   if (!developer) {
     notFound();
   }
 
-  const developerProjects = projects.filter((project) => project.developerId === developer.id);
+  const developerProjects = catalog.projects.filter((project) => project.developerId === developer.id);
 
   return (
     <>

@@ -7,16 +7,23 @@ import {
 } from "lucide-react";
 
 import { DeveloperProjectCard } from "@/components/developer-project-card";
-import { salesAgent } from "@/features/catalog/data";
+import { getPublicCatalog } from "@/features/catalog/live-queries";
 import type { Developer } from "@/features/catalog/types";
-import { getProjectsForDeveloper, getPublishedDevelopers } from "@/features/catalog/queries";
 
-export default function HomePage() {
-  const developers = getPublishedDevelopers();
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  const catalog = await getPublicCatalog();
+  const salesAgent = catalog.salesAgent;
+  const developers = catalog.developers.filter((developer) => developer.status === "published");
   const developerSpotlights = developers.slice(0, 3);
   const projectSnippets = developers
     .flatMap((developer) =>
-      getProjectsForDeveloper(developer.slug).map((project) => ({
+      catalog.projects
+        .filter(
+          (project) => project.developerId === developer.id && project.publicationStatus === "published"
+        )
+        .map((project) => ({
         developer,
         project
       }))

@@ -13,13 +13,7 @@ import { notFound } from "next/navigation";
 
 import { BreadcrumbBar } from "@/components/breadcrumb-bar";
 import { ProjectGalleryCarousel } from "@/components/project-gallery-carousel";
-import { salesAgent } from "@/features/catalog/data";
-import {
-  getDeveloperBySlug,
-  getProjectBySlugs,
-  getProjectsForDeveloper,
-  getPublishedDevelopers
-} from "@/features/catalog/queries";
+import { getPublicCatalog } from "@/features/catalog/live-queries";
 
 type ProjectDetailsPageProps = {
   params: {
@@ -28,18 +22,20 @@ type ProjectDetailsPageProps = {
   };
 };
 
-export function generateStaticParams() {
-  return getPublishedDevelopers().flatMap((developer) =>
-    getProjectsForDeveloper(developer.slug).map((project) => ({
-      developerSlug: developer.slug,
-      projectSlug: project.slug
-    }))
-  );
-}
+export const dynamic = "force-dynamic";
 
-export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) {
-  const developer = getDeveloperBySlug(params.developerSlug);
-  const project = getProjectBySlugs(params.developerSlug, params.projectSlug);
+export default async function ProjectDetailsPage({ params }: ProjectDetailsPageProps) {
+  const catalog = await getPublicCatalog();
+  const salesAgent = catalog.salesAgent;
+  const developer = catalog.developers.find(
+    (item) => item.slug === params.developerSlug && item.status === "published"
+  );
+  const project = catalog.projects.find(
+    (item) =>
+      item.slug === params.projectSlug &&
+      item.developerId === developer?.id &&
+      item.publicationStatus === "published"
+  );
 
   if (!developer || !project) {
     notFound();

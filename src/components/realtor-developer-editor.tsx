@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, ArrowLeft, Eye, Pencil, Plus, Save, Trash2 } from "lucide-react";
 
 import { RealtorImageUpload } from "@/components/realtor-image-upload";
 import { RealtorProjectManagementCard } from "@/components/realtor-project-management-card";
 import type { Developer, Project } from "@/features/catalog/types";
+import { refreshAfterMutation } from "@/lib/realtor-navigation";
 
 type RealtorDeveloperEditorProps = {
   developer: Developer;
@@ -22,6 +23,9 @@ export function RealtorDeveloperEditor({
   const [isEditing, setIsEditing] = useState(false);
   const [showSavedToast, setShowSavedToast] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const initials = developer.name
     .split(" ")
     .map((part) => part[0])
@@ -40,14 +44,69 @@ export function RealtorDeveloperEditor({
     return () => window.clearTimeout(timeoutId);
   }, [showSavedToast]);
 
-  function handleSave() {
+  async function handleSave(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setErrorMessage(null);
+    setIsSaving(true);
+
+    const formData = new FormData(event.currentTarget);
+    const response = await fetch("/api/realtor/developers", {
+      body: JSON.stringify({
+        coverage: formData.get("coverage"),
+        description: formData.get("description"),
+        name: formData.get("name"),
+        publicationStatus: formData.get("isPublished") === "on" ? "published" : "draft",
+        slug: developer.slug,
+        specialty: formData.get("specialty")
+      }),
+      headers: {
+        "Content-Type": "application/json"
+      },
+      method: "PATCH"
+    });
+    const payload = (await response.json().catch(() => null)) as {
+      message?: string;
+      redirectTo?: string;
+    } | null;
+
+    setIsSaving(false);
+
+    if (!response.ok) {
+      setErrorMessage(payload?.message ?? "Developer could not be updated.");
+      return;
+    }
+
     setIsEditing(false);
     setShowSavedToast(true);
+    refreshAfterMutation(router, payload?.redirectTo);
   }
 
-  function handleDeleteConfirm() {
+  async function handleDeleteConfirm() {
+    setErrorMessage(null);
+    setIsDeleting(true);
+
+    const response = await fetch("/api/realtor/developers", {
+      body: JSON.stringify({ slug: developer.slug }),
+      headers: {
+        "Content-Type": "application/json"
+      },
+      method: "DELETE"
+    });
+    const payload = (await response.json().catch(() => null)) as {
+      message?: string;
+      redirectTo?: string;
+    } | null;
+
+    setIsDeleting(false);
+
+    if (!response.ok) {
+      setShowDeleteModal(false);
+      setErrorMessage(payload?.message ?? "Developer could not be deleted.");
+      return;
+    }
+
     setShowDeleteModal(false);
-    router.push(`/realtor/developers?deleted=${developer.slug}`);
+    refreshAfterMutation(router, `${payload?.redirectTo ?? "/realtor/developers"}?deleted=${developer.slug}`);
   }
 
   return (
@@ -69,9 +128,9 @@ export function RealtorDeveloperEditor({
               <button className="realtor-text-button" onClick={() => setShowDeleteModal(false)} type="button">
                 Cancel
               </button>
-              <button className="realtor-danger-button" onClick={handleDeleteConfirm} type="button">
+              <button className="realtor-danger-button" disabled={isDeleting} onClick={handleDeleteConfirm} type="button">
                 <Trash2 aria-hidden="true" className="h-4 w-4" />
-                Delete profile
+                {isDeleting ? "Deleting..." : "Delete profile"}
               </button>
             </div>
           </div>
@@ -99,9 +158,9 @@ export function RealtorDeveloperEditor({
               Edit profile
             </button>
             {isEditing ? (
-              <button className="realtor-save-button" onClick={handleSave} type="button">
+              <button className="realtor-save-button" disabled={isSaving} form="edit-developer-form" type="submit">
                 <Save aria-hidden="true" className="h-4 w-4" />
-                Save changes
+                {isSaving ? "Saving..." : "Save changes"}
               </button>
             ) : null}
             <button className="realtor-danger-button" onClick={() => setShowDeleteModal(true)} type="button">
@@ -111,7 +170,18 @@ export function RealtorDeveloperEditor({
           </div>
         </div>
 
-        <form className="realtor-form-grid" aria-label={`Edit ${developer.name} form`}>
+        {errorMessage ? (
+          <p className="realtor-form-error reveal" role="alert">
+            {errorMessage}
+          </p>
+        ) : null}
+
+        <form
+          className="realtor-form-grid"
+          aria-label={`Edit ${developer.name} form`}
+          id="edit-developer-form"
+          onSubmit={handleSave}
+        >
           <section className="realtor-form-panel reveal scroll-reveal">
             <div className="realtor-section-heading realtor-form-heading">
               <h2>Profile details</h2>
@@ -121,21 +191,21 @@ export function RealtorDeveloperEditor({
             <div className="realtor-field-grid">
               <label className="realtor-field">
                 <span>Developer name</span>
-                <input defaultValue={developer.name} readOnly={!isEditing} type="text" />
+                <input defaultValue={developer.name} name="name" readOnly={!isEditing} required type="text" />
               </label>
               <label className="realtor-field">
                 <span>Specialty</span>
-                <input defaultValue={developer.specialty} readOnly={!isEditing} type="text" />
+                <input defaultValue={developer.specialty} name="specialty" readOnly={!isEditing} required type="text" />
               </label>
               <label className="realtor-field">
                 <span>Primary coverage</span>
-                <input defaultValue={developer.coverage} readOnly={!isEditing} type="text" />
+                <input defaultValue={developer.coverage} name="coverage" readOnly={!isEditing} required type="text" />
               </label>
             </div>
 
             <label className="realtor-field realtor-field-full">
               <span>Developer description</span>
-              <textarea defaultValue={developer.description} readOnly={!isEditing} rows={6} />
+              <textarea defaultValue={developer.description} name="description" readOnly={!isEditing} required rows={6} />
             </label>
           </section>
 
@@ -154,7 +224,12 @@ export function RealtorDeveloperEditor({
             />
 
             <label className="realtor-check-row">
-              <input defaultChecked={developer.status === "published"} disabled={!isEditing} type="checkbox" />
+              <input
+                defaultChecked={developer.status === "published"}
+                disabled={!isEditing}
+                name="isPublished"
+                type="checkbox"
+              />
               <span>Published on public catalog</span>
             </label>
           </aside>

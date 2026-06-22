@@ -1,9 +1,18 @@
 import { NextResponse } from "next/server";
 
 import { getRealtorContext } from "@/server/auth/realtor-session";
+import { revalidateCatalogPaths } from "@/server/cache/catalog-revalidation";
 import { getErrorResponse } from "@/server/errors";
-import { createProjectForRealtor } from "@/server/services/realtor-project-service";
-import { createProjectSchema } from "@/server/validators/realtor-project";
+import {
+  createProjectForRealtor,
+  deleteProjectForRealtor,
+  updateProjectForRealtor
+} from "@/server/services/realtor-project-service";
+import {
+  createProjectSchema,
+  deleteProjectSchema,
+  updateProjectSchema
+} from "@/server/validators/realtor-project";
 
 export async function createProjectController(request: Request) {
   try {
@@ -20,6 +29,15 @@ export async function createProjectController(request: Request) {
       limits: context.limits,
       realtorId: context.realtorId
     });
+    revalidateCatalogPaths(
+      [
+        `/realtor/developers/${parsed.data.developerSlug}`,
+        `/realtor/developers/${parsed.data.developerSlug}/projects/${project.slug}`,
+        `/developers/${parsed.data.developerSlug}`,
+        `/developers/${parsed.data.developerSlug}/projects/${project.slug}`
+      ],
+      context.realtorId
+    );
 
     return NextResponse.json(
       {
@@ -28,6 +46,81 @@ export async function createProjectController(request: Request) {
       },
       { status: 201 }
     );
+  } catch (error) {
+    const response = getErrorResponse(error);
+
+    return NextResponse.json({ message: response.message }, { status: response.status });
+  }
+}
+
+export async function updateProjectController(request: Request) {
+  try {
+    const body = await request.json().catch(() => null);
+    const parsed = updateProjectSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json({ message: "Enter complete project details." }, { status: 400 });
+    }
+
+    const context = await getRealtorContext();
+    const project = await updateProjectForRealtor({
+      input: parsed.data,
+      realtorId: context.realtorId
+    });
+    revalidateCatalogPaths(
+      [
+        `/realtor/developers/${parsed.data.currentDeveloperSlug ?? parsed.data.developerSlug}`,
+        `/realtor/developers/${parsed.data.developerSlug}`,
+        `/realtor/developers/${parsed.data.developerSlug}/projects/${project.slug}`,
+        `/developers/${parsed.data.currentDeveloperSlug ?? parsed.data.developerSlug}`,
+        `/developers/${parsed.data.developerSlug}`,
+        `/developers/${parsed.data.developerSlug}/projects/${parsed.data.projectSlug}`,
+        `/developers/${parsed.data.developerSlug}/projects/${project.slug}`
+      ],
+      context.realtorId
+    );
+
+    return NextResponse.json({
+      project,
+      redirectTo: `/realtor/developers/${parsed.data.developerSlug}/projects/${project.slug}`,
+      publicUrl: `/developers/${parsed.data.developerSlug}/projects/${project.slug}`
+    });
+  } catch (error) {
+    const response = getErrorResponse(error);
+
+    return NextResponse.json({ message: response.message }, { status: response.status });
+  }
+}
+
+export async function deleteProjectController(request: Request) {
+  try {
+    const body = await request.json().catch(() => null);
+    const parsed = deleteProjectSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json({ message: "Choose a project to delete." }, { status: 400 });
+    }
+
+    const context = await getRealtorContext();
+    const project = await deleteProjectForRealtor({
+      developerSlug: parsed.data.developerSlug,
+      projectSlug: parsed.data.projectSlug,
+      realtorId: context.realtorId
+    });
+    revalidateCatalogPaths(
+      [
+        `/realtor/developers/${parsed.data.developerSlug}`,
+        `/realtor/developers/${parsed.data.developerSlug}/projects/${parsed.data.projectSlug}`,
+        `/developers/${parsed.data.developerSlug}`,
+        `/developers/${parsed.data.developerSlug}/projects/${parsed.data.projectSlug}`
+      ],
+      context.realtorId
+    );
+
+    return NextResponse.json({
+      project,
+      redirectTo: `/realtor/developers/${parsed.data.developerSlug}`
+    });
   } catch (error) {
     const response = getErrorResponse(error);
 

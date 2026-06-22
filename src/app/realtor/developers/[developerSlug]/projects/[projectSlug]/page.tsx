@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import { Home } from "lucide-react";
 
 import { RealtorProjectEditor } from "@/components/realtor-project-editor";
-import { developers, projects } from "@/features/catalog/data";
+import { getCatalogForRealtorId } from "@/features/catalog/live-queries";
+import { requireRealtorContextForPage } from "@/server/auth/realtor-session";
 
 type RealtorProjectEditorPageProps = {
   params: {
@@ -11,9 +12,13 @@ type RealtorProjectEditorPageProps = {
   };
 };
 
-export default function RealtorProjectEditorPage({ params }: RealtorProjectEditorPageProps) {
-  const developer = developers.find((item) => item.slug === params.developerSlug);
-  const project = projects.find(
+export const dynamic = "force-dynamic";
+
+export default async function RealtorProjectEditorPage({ params }: RealtorProjectEditorPageProps) {
+  const context = await requireRealtorContextForPage();
+  const catalog = await getCatalogForRealtorId(context.realtorId);
+  const developer = catalog.developers.find((item) => item.slug === params.developerSlug);
+  const project = catalog.projects.find(
     (item) => item.slug === params.projectSlug && item.developerId === developer?.id
   );
 
@@ -44,7 +49,7 @@ export default function RealtorProjectEditorPage({ params }: RealtorProjectEdito
         </div>
       </section>
 
-      <RealtorProjectEditor developer={developer} project={project} />
+      <RealtorProjectEditor developer={developer} developers={catalog.developers} project={project} />
     </>
   );
 }

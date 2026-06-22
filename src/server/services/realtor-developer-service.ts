@@ -1,12 +1,15 @@
 import { AppError } from "@/server/errors";
 import {
+  archiveDeveloper,
   countDevelopers,
+  findDeveloperBySlug,
   getDeveloperSlugs,
-  insertDeveloper
+  insertDeveloper,
+  updateDeveloper
 } from "@/server/repositories/realtor-catalog-repository";
 import { createUniqueSlug } from "@/server/services/slug";
 import { assertDeveloperLimit, type SubscriptionLimits } from "@/server/services/subscription-limits";
-import type { CreateDeveloperInput } from "@/server/validators/realtor-developer";
+import type { CreateDeveloperInput, UpdateDeveloperInput } from "@/server/validators/realtor-developer";
 
 export async function createDeveloperForRealtor({
   input,
@@ -33,4 +36,39 @@ export async function createDeveloperForRealtor({
 
     throw new AppError("Developer could not be created.");
   }
+}
+
+export async function updateDeveloperForRealtor({
+  input,
+  realtorId
+}: {
+  input: UpdateDeveloperInput;
+  realtorId: string;
+}) {
+  const developer = await findDeveloperBySlug(realtorId, input.slug);
+
+  if (!developer) {
+    throw new AppError("Developer could not be found.", 404);
+  }
+
+  const existingSlugs = (await getDeveloperSlugs(realtorId)).filter((slug) => slug !== input.slug);
+  const slug = createUniqueSlug(input.name, existingSlugs);
+
+  return updateDeveloper({ input, realtorId, slug });
+}
+
+export async function deleteDeveloperForRealtor({
+  realtorId,
+  slug
+}: {
+  realtorId: string;
+  slug: string;
+}) {
+  const developer = await findDeveloperBySlug(realtorId, slug);
+
+  if (!developer) {
+    throw new AppError("Developer could not be found.", 404);
+  }
+
+  return archiveDeveloper({ realtorId, slug });
 }

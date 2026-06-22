@@ -4,6 +4,8 @@ export type ContactType =
   | "phone"
   | "email"
   | "facebook"
+  | "instagram"
+  | "linkedin"
   | "messenger"
   | "whatsapp"
   | "viber"
