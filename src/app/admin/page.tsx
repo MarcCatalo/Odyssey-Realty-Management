@@ -20,7 +20,7 @@ const cards = [
   {
     title: "Images",
     value: "Supabase Storage",
-    description: "Upload developer, project cover, house gallery, and SDP images.",
+    description: "Upload developer, project cover, house model, and SDP images.",
     icon: Images
   },
   {

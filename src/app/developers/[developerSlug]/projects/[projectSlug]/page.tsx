@@ -1,13 +1,12 @@
 import {
   BadgeDollarSign,
-  Building2,
   Calendar,
-  ExternalLink,
+  Check,
   Home,
   Layers,
   MapPin,
   Maximize2,
-  Navigation
+  Sparkles
 } from "lucide-react";
 import { notFound } from "next/navigation";
 
@@ -43,7 +42,6 @@ export default async function ProjectDetailsPage({ params }: ProjectDetailsPageP
   }
 
   const galleryImages = project.gallery;
-  const compactLocation = project.location.split(",")[0] ?? project.location;
   const formattedPriceRange = formatPesoPrice(project.priceRange);
 
   return (
@@ -83,7 +81,7 @@ export default async function ProjectDetailsPage({ params }: ProjectDetailsPageP
 
       <section className="project-section scroll-reveal px-5 py-10 md:px-10">
         <div className="mx-auto max-w-7xl">
-          <SectionHeading title="House gallery" tag="Exterior & interior" />
+          <SectionHeading title="House models" tag="Exterior & interior" />
           <ProjectGalleryCarousel images={galleryImages} />
         </div>
       </section>
@@ -109,39 +107,24 @@ export default async function ProjectDetailsPage({ params }: ProjectDetailsPageP
         </div>
       </section>
 
-      <section className="project-section scroll-reveal border-t-[3px] border-canopy px-5 py-10 md:px-10">
-        <div className="mx-auto max-w-7xl">
-          <SectionHeading title="Location" />
-          <div className="project-location-grid">
-            <div className="project-location-card reveal">
-              <h2>{project.mapAddress ?? `42 ${project.title} Drive, ${project.location}`}</h2>
-              <LocationItem icon={MapPin} label={project.location} />
-              <LocationItem icon={Building2} label={`${compactLocation} station, 8 min walk`} />
-              <LocationItem icon={Navigation} label={`${compactLocation} access, 5 min drive`} />
-              <a
-                className="project-map-button"
-                href={project.googleMapsUrl}
-                rel="noreferrer"
-                target="_blank"
-              >
-                <MapPin aria-hidden="true" className="h-4 w-4" />
-                Open in Google Maps
-                <ExternalLink aria-hidden="true" className="h-4 w-4" />
-              </a>
-            </div>
-            <div className="project-map-card reveal reveal-delay-1" aria-label={`${project.title} illustrative map`}>
-              <div className="project-map-road project-map-road-a" />
-              <div className="project-map-road project-map-road-b" />
-              <div className="project-map-road project-map-road-c" />
-              <div className="project-map-pin">
-                <MapPin aria-hidden="true" className="h-5 w-5" />
-                <span>{project.title}</span>
-              </div>
-              <p>{project.location}, map is illustrative only</p>
+      {project.featuresAmenities.length > 0 ? (
+        <section className="project-section scroll-reveal border-t-[3px] border-canopy px-5 py-10 md:px-10">
+          <div className="mx-auto max-w-7xl">
+            <SectionHeading title="Features and amenities" />
+            <div className="project-amenities-grid stagger-list">
+              {project.featuresAmenities.map((amenity, index) => (
+                <div className="project-amenity-item reveal scroll-reveal" key={`${amenity}-${index}`}>
+                  <span>
+                    <Sparkles aria-hidden="true" className="h-5 w-5" />
+                  </span>
+                  <strong>{amenity}</strong>
+                  <Check aria-hidden="true" className="h-4 w-4" />
+                </div>
+              ))}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      ) : null}
 
       <footer className="home-footer">
         <div className="mx-auto flex max-w-7xl flex-col gap-6 px-5 py-10 md:flex-row md:items-center md:justify-between md:px-10">
@@ -198,15 +181,6 @@ function PlanRow({ label, value }: { label: string; value: string }) {
     <div className="project-plan-row">
       <span>{label}</span>
       <strong>{value}</strong>
-    </div>
-  );
-}
-
-function LocationItem({ icon: Icon, label }: { icon: typeof MapPin; label: string }) {
-  return (
-    <div className="project-location-item">
-      <Icon aria-hidden="true" className="h-4 w-4" />
-      <span>{label}</span>
     </div>
   );
 }

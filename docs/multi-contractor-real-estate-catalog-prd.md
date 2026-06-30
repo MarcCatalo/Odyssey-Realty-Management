@@ -62,7 +62,7 @@ The platform is not a broad public marketplace. Public visitors land on a specif
 - Developer self-service accounts.
 - Marketplace bidding, checkout, reservation, or payment flows.
 - Public browsing across all realtors from one global marketplace page.
-- Embedded Google Maps for MVP.
+- Public map and location-link sections.
 - Storing private sales-agent documents or Google Drive links in the app database.
 - Complex billing automation for MVP.
 - Fully public platform-owner dashboard. The owner management app is local-only for MVP.
@@ -194,24 +194,24 @@ Project page content:
 - Optional project type.
 - Optional status or availability.
 - Optional price range.
-- House gallery.
+- House models.
 - Site Development Plan section.
-- Project-level Google Maps location button.
+- Optional features and amenities list.
 - Realtor contact actions.
 
 Project page header should focus on project identity. Contact actions should appear in the dedicated contact section, not as a crowded header action stack.
 
-### 7.5 House Gallery
+### 7.5 House Models
 
 Project pages should support multiple public images.
 
-Gallery behavior:
+House model behavior:
 
 - One image can be marked as the project cover image.
-- Multiple images can appear in an animated card gallery.
+- Multiple images can appear in an animated card carousel.
 - Images may include house photos, renders, exterior photos, and interior photos.
 - Users should be able to click or tap images to view them larger.
-- Gallery containers should feel dynamic but remain clean and easy to use.
+- House model containers should feel dynamic but remain clean and easy to use.
 
 ### 7.6 Site Development Plan Section
 
@@ -221,11 +221,18 @@ SDP content:
 
 - SDP image or file preview if available.
 - Short optional description.
-- Button below the SDP container for opening the project location in Google Maps.
+- Optional plan details shown beside the SDP image.
 
-The location button should use a project-level Google Maps URL entered by the realtor.
+### 7.7 Features and Amenities
 
-### 7.7 Contact Actions
+Each project may include an ordered list of public features and amenities.
+
+- Amenities are optional.
+- Realtors can add, rename, reorder, or remove entries.
+- Empty amenities are not published.
+- The public section stays hidden when a project has no amenities.
+
+### 7.8 Contact Actions
 
 The default public contact source for a realtor catalog is the realtor's contact information.
 
@@ -301,9 +308,9 @@ Realtors should be able to:
 - Create a project under one of their developers.
 - Edit project details.
 - Upload a project cover image.
-- Upload and sort house gallery images.
+- Upload and sort house model images.
 - Add or update SDP image.
-- Add project-level Google Maps URL.
+- Add an optional ordered features and amenities list.
 - Add optional status and price range.
 - Mark project as draft, published, archived, or deleted.
 - Preview project before publishing.
@@ -325,13 +332,13 @@ Upload rules:
 - Images should be compressed and resized before storage whenever possible.
 - The app should generate web-friendly variants for public display, such as thumbnail, card, and full-size display versions.
 - Original uploads should either be discarded after processing or stored privately only if there is a clear admin need.
-- Upload limits should respect subscription parameters such as storage limit and maximum gallery images per project.
+- Upload limits should respect subscription parameters such as the maximum image count per project.
 
 Recommended image size targets:
 
 - Thumbnail: approximately 400px wide.
 - Card/display image: approximately 1000-1400px wide.
-- Full gallery image: capped around 1800-2200px wide.
+- Full house model image: capped around 1800-2200px wide.
 - Use WebP where possible for public display.
 
 Storage path rules:
@@ -410,7 +417,7 @@ The owner app should manage subscription parameters such as:
 - Subscription renewal or expiration date.
 - Maximum published developers.
 - Maximum published projects per developer.
-- Optional maximum gallery images per project.
+- Optional maximum project images per project.
 - Optional storage limit.
 - Optional feature flags.
 - Internal notes.
@@ -431,7 +438,6 @@ Recommended MVP stack:
 - Authentication: Supabase Auth for realtor accounts.
 - Storage: Supabase Storage for uploaded public images.
 - Hosting: Vercel for the public and realtor admin app.
-- Maps: project-level Google Maps URL buttons only. No embedded map for MVP.
 
 Rationale:
 
@@ -768,7 +774,6 @@ Forms should validate important URLs before saving.
 
 Validation rules:
 
-- Google Maps location links should allow known Google Maps domains.
 - Custom contact links should require valid HTTPS URLs, except phone and email links.
 - Invalid or suspicious links should be rejected or clearly warned before publishing.
 
@@ -808,9 +813,9 @@ MVP includes:
 - Mobile developer navigation.
 - Developer profile pages.
 - Project detail pages.
-- House image gallery.
+- House models carousel.
 - SDP section.
-- Project-level Google Maps button.
+- Optional features and amenities section.
 - Realtor contact actions as the default public contact action.
 - Developer contact details on developer cards and developer profile pages only.
 - Realtor admin dashboard.

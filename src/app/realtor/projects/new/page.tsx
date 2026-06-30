@@ -23,7 +23,7 @@ export default async function NewProjectPage({ searchParams }: NewProjectPagePro
             <h1>Add project</h1>
             <p>
               Create a project page, assign it to a developer, and prepare the public details,
-              house gallery, SDP, and location fields.
+              house models, SDP, and amenities.
             </p>
           </div>
         </div>

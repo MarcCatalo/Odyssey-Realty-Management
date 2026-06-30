@@ -16,6 +16,7 @@ import {
   Trash2
 } from "lucide-react";
 
+import { RealtorAmenitiesField } from "@/components/realtor-amenities-field";
 import { RealtorImageUpload } from "@/components/realtor-image-upload";
 import { RealtorFeedbackToast } from "@/components/realtor-feedback-toast";
 import { RealtorPublishingControls } from "@/components/realtor-publishing-controls";
@@ -62,11 +63,14 @@ export function RealtorProjectEditor({ developer, developers, project }: Realtor
         currentDeveloperSlug: developer.slug,
         description: formData.get("description"),
         developerSlug: formData.get("developerSlug"),
-        googleMapsUrl: formData.get("googleMapsUrl"),
+        featuresAmenities: formData
+          .getAll("featuresAmenities")
+          .map(String)
+          .map((value) => value.trim())
+          .filter(Boolean),
         levels: formData.get("levels"),
         location: formData.get("location"),
         lotSizeRange: formData.get("lotSizeRange"),
-        mapAddress: formData.get("mapAddress"),
         priceRange: formData.get("priceRange"),
         projectSlug: project.slug,
         projectType: formData.get("projectType"),
@@ -273,22 +277,11 @@ export function RealtorProjectEditor({ developer, developers, project }: Realtor
               </div>
             </FormSection>
 
-            <FormSection title="Location section">
-              <div className="realtor-field-grid">
-                <ProjectInput
-                  defaultValue={project.googleMapsUrl}
-                  isEditing={isEditing}
-                  label="Google Maps link"
-                  name="googleMapsUrl"
-                  type="url"
-                />
-                <ProjectInput
-                  defaultValue={project.mapAddress ?? project.location}
-                  isEditing={isEditing}
-                  label="Map address"
-                  name="mapAddress"
-                />
-              </div>
+            <FormSection title="Features and amenities">
+              <RealtorAmenitiesField
+                disabled={!isEditing}
+                initialValues={project.featuresAmenities}
+              />
             </FormSection>
           </section>
 
@@ -314,11 +307,11 @@ export function RealtorProjectEditor({ developer, developers, project }: Realtor
             <div className="realtor-detail-stack">
               <div className="realtor-detail-row">
                 <CalendarDays aria-hidden="true" className="h-4 w-4" />
-                <span>Location button enabled</span>
+                <span>{project.featuresAmenities.length} amenities listed</span>
               </div>
               <div className="realtor-detail-row">
                 <Ruler aria-hidden="true" className="h-4 w-4" />
-                <span>{project.gallery.length} gallery images</span>
+                <span>{project.gallery.length} house model images</span>
               </div>
               <div className="realtor-detail-row">
                 <Home aria-hidden="true" className="h-4 w-4" />
@@ -345,10 +338,10 @@ export function RealtorProjectEditor({ developer, developers, project }: Realtor
                 variant="wide"
               />
               <RealtorImageUpload
-                description="Interior and exterior photos shown in the public house gallery."
+                description="Interior and exterior photos shown in the public house models section."
                 disabled={!isEditing}
                 initialImages={project.gallery}
-                label="House gallery photos"
+                label="House model photos"
                 manageable
                 mediaRole="project_gallery"
                 multiple

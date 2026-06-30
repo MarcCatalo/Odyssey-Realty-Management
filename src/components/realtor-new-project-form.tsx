@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Building2, Save } from "lucide-react";
 
+import { RealtorAmenitiesField } from "@/components/realtor-amenities-field";
 import { RealtorImageUpload } from "@/components/realtor-image-upload";
 import { RealtorPublishingControls } from "@/components/realtor-publishing-controls";
 import type { Developer } from "@/features/catalog/types";
@@ -28,11 +29,6 @@ const projectStatFields = [
   { label: "Levels", name: "levels", placeholder: "2", type: "number" },
   { label: "Lot size range", name: "lotSizeRange", placeholder: "180-220 sqm" },
   { label: "Completion label", name: "completionLabel", placeholder: "Q3 2026" }
-];
-
-const locationFields = [
-  { label: "Google Maps link", name: "googleMapsUrl", placeholder: "https://maps.google.com/...", type: "url" },
-  { label: "Map address", name: "mapAddress", placeholder: "42 Greenridge Drive, Quezon City, Metro Manila" }
 ];
 
 const sdpFields = [
@@ -67,11 +63,14 @@ export function RealtorNewProjectForm({
         completionLabel: formData.get("completionLabel"),
         description: formData.get("description"),
         developerSlug: formData.get("developerSlug"),
-        googleMapsUrl: formData.get("googleMapsUrl"),
+        featuresAmenities: formData
+          .getAll("featuresAmenities")
+          .map(String)
+          .map((value) => value.trim())
+          .filter(Boolean),
         levels: formData.get("levels"),
         location: formData.get("location"),
         lotSizeRange: formData.get("lotSizeRange"),
-        mapAddress: formData.get("mapAddress"),
         priceRange: formData.get("priceRange"),
         projectType: formData.get("projectType"),
         publicationStatus: formData.get("publicationStatus"),
@@ -193,12 +192,8 @@ export function RealtorNewProjectForm({
               </div>
             </FormSection>
 
-            <FormSection title="Location section">
-              <div className="realtor-field-grid">
-                {locationFields.map((field) => (
-                  <TextField field={field} key={field.name} />
-                ))}
-              </div>
+            <FormSection title="Features and amenities">
+              <RealtorAmenitiesField />
             </FormSection>
           </section>
 
@@ -233,9 +228,9 @@ export function RealtorNewProjectForm({
                 variant="wide"
               />
               <RealtorImageUpload
-                description="Interior and exterior photos shown in the public house gallery."
-                fallbackText="Gallery"
-                label="House gallery photos"
+                description="Interior and exterior photos shown in the public house models section."
+                fallbackText="House models"
+                label="House model photos"
                 manageable
                 mediaRole="project_gallery"
                 multiple

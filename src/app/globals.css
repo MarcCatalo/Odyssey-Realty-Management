@@ -1800,6 +1800,44 @@ svg {
     text-transform: uppercase;
   }
 
+  .project-amenities-grid {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .project-amenity-item {
+    align-items: center;
+    background: white;
+    border: 3px solid theme("colors.canopy");
+    color: theme("colors.canopy");
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    min-height: 5rem;
+    padding: 1rem 1.15rem;
+  }
+
+  .project-amenity-item > span {
+    align-items: center;
+    background: theme("colors.sprout");
+    display: flex;
+    height: 2.5rem;
+    justify-content: center;
+    width: 2.5rem;
+  }
+
+  .project-amenity-item strong {
+    font-size: 0.9rem;
+    font-weight: 900;
+    line-height: 1.35;
+    text-transform: uppercase;
+  }
+
+  .project-amenity-item > svg {
+    color: theme("colors.grove");
+    flex: none;
+  }
+
   .project-location-grid,
   .project-contact-grid {
     display: grid;
@@ -3333,6 +3371,79 @@ svg {
     height: 3px;
   }
 
+  .realtor-amenities-field {
+    background: theme("colors.bone");
+    border: 3px solid theme("colors.canopy");
+    padding: 1rem;
+  }
+
+  .realtor-amenities-intro {
+    align-items: flex-start;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: space-between;
+  }
+
+  .realtor-amenities-intro strong {
+    color: theme("colors.canopy");
+    font-size: 0.8rem;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  .realtor-amenities-intro p,
+  .realtor-amenities-empty {
+    color: theme("colors.canopy");
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.6;
+    margin-top: 0.35rem;
+  }
+
+  .realtor-amenities-list {
+    display: grid;
+    gap: 0.9rem;
+    margin-top: 1rem;
+  }
+
+  .realtor-amenity-row {
+    align-items: end;
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .realtor-amenity-actions {
+    display: flex;
+    gap: 0.35rem;
+  }
+
+  .realtor-amenity-actions button {
+    align-items: center;
+    background: white;
+    border: 3px solid theme("colors.canopy");
+    color: theme("colors.canopy");
+    display: inline-flex;
+    height: 3.25rem;
+    justify-content: center;
+    width: 3.25rem;
+  }
+
+  .realtor-amenity-actions button:hover:not(:disabled),
+  .realtor-amenity-actions button:focus-visible:not(:disabled) {
+    background: theme("colors.sprout");
+  }
+
+  .realtor-amenity-actions button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+
+  .realtor-amenity-actions .realtor-amenity-remove {
+    color: #8d1f19;
+  }
+
   .realtor-field-grid-follow {
     margin-top: 1.15rem;
   }
@@ -4271,6 +4382,10 @@ svg {
       grid-template-columns: minmax(0, 1fr) minmax(17rem, 0.42fr);
     }
 
+    .project-amenities-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .project-location-grid,
     .project-contact-grid {
       grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
@@ -4346,6 +4461,15 @@ svg {
   }
 
   @media (max-width: 639px) {
+    .realtor-amenity-row {
+      align-items: stretch;
+      grid-template-columns: 1fr;
+    }
+
+    .realtor-amenity-actions button {
+      flex: 1;
+    }
+
     .project-gallery-track {
       grid-auto-columns: calc(100% - 1rem);
     }
