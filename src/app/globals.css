@@ -2738,7 +2738,7 @@ svg {
     margin: -1px -1px 0;
   }
 
-  .realtor-management-media span {
+  .realtor-management-logo-mark {
     align-items: center;
     background: theme("colors.grove");
     border: 3px solid theme("colors.bone");
@@ -2750,7 +2750,22 @@ svg {
     font-weight: 900;
     height: 4.75rem;
     justify-content: center;
+    overflow: hidden;
+    position: relative;
     width: 4.75rem;
+  }
+
+  .realtor-management-logo-mark img {
+    opacity: 0.72;
+    padding: 0.35rem;
+  }
+
+  .realtor-management-logo-mark span {
+    align-items: center;
+    display: flex;
+    height: 100%;
+    justify-content: center;
+    width: 100%;
   }
 
   .realtor-management-media strong {

@@ -123,18 +123,20 @@ function DeveloperManagementCard({ developer, projects }: { developer: Developer
         prefetch
       >
         <div className="realtor-management-media">
-          {developer.logoImage ? (
-            <Image
-              alt={developer.logoImage.alt}
-              className="card-media object-cover"
-              fill
-              sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 100vw"
-              src={developer.logoImage.src}
-              unoptimized
-            />
-          ) : (
-            <span>{initials}</span>
-          )}
+          <div className="realtor-management-logo-mark">
+            {developer.logoImage ? (
+              <Image
+                alt={developer.logoImage.alt}
+                className="object-contain"
+                fill
+                sizes="4.75rem"
+                src={developer.logoImage.src}
+                unoptimized
+              />
+            ) : (
+              <span>{initials}</span>
+            )}
+          </div>
           <strong>{developer.status}</strong>
         </div>
         <div className="realtor-management-body">
