@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   AtSign,
   Globe,
@@ -13,22 +14,47 @@ import {
   UserRound
 } from "lucide-react";
 
+import { RealtorFeedbackToast } from "@/components/realtor-feedback-toast";
 import type { SalesAgent } from "@/features/catalog/types";
+import { refreshAfterMutation } from "@/lib/realtor-navigation";
 
 type RealtorContactProfileEditorProps = {
   salesAgent: SalesAgent;
 };
 
 export function RealtorContactProfileEditor({ salesAgent }: RealtorContactProfileEditorProps) {
+  const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [showSavedToast, setShowSavedToast] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const phoneLink = salesAgent.contactLinks.find((link) => link.type === "phone");
   const emailLink = salesAgent.contactLinks.find((link) => link.type === "email");
   const socialFields = [
-    { icon: Share2, label: "Facebook page", value: salesAgent.socials.find((link) => link.type === "facebook")?.value ?? "" },
-    { icon: AtSign, label: "Instagram", value: salesAgent.socials.find((link) => link.type === "instagram")?.value ?? "" },
-    { icon: Globe, label: "LinkedIn", value: salesAgent.socials.find((link) => link.type === "linkedin")?.value ?? "" },
-    { icon: Globe, label: "Other website", value: salesAgent.socials.find((link) => link.type === "website")?.value ?? "" }
+    {
+      icon: Share2,
+      label: "Facebook page",
+      name: "facebook",
+      value: salesAgent.socials.find((link) => link.type === "facebook")?.href ?? ""
+    },
+    {
+      icon: AtSign,
+      label: "Instagram",
+      name: "instagram",
+      value: salesAgent.socials.find((link) => link.type === "instagram")?.href ?? ""
+    },
+    {
+      icon: Globe,
+      label: "LinkedIn",
+      name: "linkedin",
+      value: salesAgent.socials.find((link) => link.type === "linkedin")?.href ?? ""
+    },
+    {
+      icon: Globe,
+      label: "Other website",
+      name: "website",
+      value: salesAgent.socials.find((link) => link.type === "website")?.href ?? ""
+    }
   ];
 
   useEffect(() => {
@@ -43,9 +69,45 @@ export function RealtorContactProfileEditor({ salesAgent }: RealtorContactProfil
     return () => window.clearTimeout(timeoutId);
   }, [showSavedToast]);
 
-  function handleSave() {
+  async function handleSave(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setErrorMessage(null);
+    setIsSaving(true);
+
+    const formData = new FormData(event.currentTarget);
+    const response = await fetch("/api/realtor/profile", {
+      body: JSON.stringify({
+        businessName: formData.get("businessName"),
+        email: formData.get("email"),
+        headerMain: formData.get("headerMain"),
+        headerPrimarySubheader: formData.get("headerPrimarySubheader"),
+        headerSecondarySubheader: formData.get("headerSecondarySubheader"),
+        phone: formData.get("phone"),
+        socials: {
+          facebook: formData.get("facebook"),
+          instagram: formData.get("instagram"),
+          linkedin: formData.get("linkedin"),
+          website: formData.get("website")
+        },
+        title: formData.get("title")
+      }),
+      headers: {
+        "Content-Type": "application/json"
+      },
+      method: "PATCH"
+    });
+    const payload = (await response.json().catch(() => null)) as { message?: string } | null;
+
+    setIsSaving(false);
+
+    if (!response.ok) {
+      setErrorMessage(payload?.message ?? "Profile details could not be saved.");
+      return;
+    }
+
     setIsEditing(false);
     setShowSavedToast(true);
+    refreshAfterMutation(router);
   }
 
   return (
@@ -69,27 +131,31 @@ export function RealtorContactProfileEditor({ salesAgent }: RealtorContactProfil
       </section>
 
       <section className="realtor-dashboard-section px-5 py-10 md:px-10">
-        <div className="mx-auto max-w-7xl">
+        <form className="mx-auto max-w-7xl" onSubmit={handleSave}>
           <div className="realtor-form-toolbar reveal">
             <div />
             <div className="realtor-toolbar-actions">
               {showSavedToast ? (
-                <div aria-live="polite" className="realtor-feedback-toast">
-                  <span>Edits have been saved.</span>
-                </div>
+                <RealtorFeedbackToast message="Edits have been saved." />
               ) : null}
               <button className="realtor-text-button" onClick={() => setIsEditing(true)} type="button">
                 <Pencil aria-hidden="true" className="h-4 w-4" />
                 Edit profile
               </button>
               {isEditing ? (
-                <button className="realtor-save-button" onClick={handleSave} type="button">
+                <button className="realtor-save-button" disabled={isSaving} type="submit">
                   <Save aria-hidden="true" className="h-4 w-4" />
-                  Save changes
+                  {isSaving ? "Saving..." : "Save changes"}
                 </button>
               ) : null}
             </div>
           </div>
+
+          {errorMessage ? (
+            <p className="realtor-form-error reveal" role="alert">
+              {errorMessage}
+            </p>
+          ) : null}
 
           <div className="realtor-profile-editor-grid">
             <aside className="realtor-profile-photo-panel reveal scroll-reveal">
@@ -122,19 +188,43 @@ export function RealtorContactProfileEditor({ salesAgent }: RealtorContactProfil
               <div className="realtor-field-grid">
                 <label className="realtor-field">
                   <span>Realtor name</span>
-                  <input defaultValue={salesAgent.name} readOnly={!isEditing} required type="text" />
+                  <input
+                    defaultValue={salesAgent.name}
+                    name="businessName"
+                    readOnly={!isEditing}
+                    required
+                    type="text"
+                  />
                 </label>
                 <label className="realtor-field">
                   <span>Contact number</span>
-                  <input defaultValue={phoneLink?.value ?? ""} readOnly={!isEditing} required type="tel" />
+                  <input
+                    defaultValue={phoneLink?.value ?? ""}
+                    name="phone"
+                    readOnly={!isEditing}
+                    required
+                    type="tel"
+                  />
                 </label>
                 <label className="realtor-field">
                   <span>Email address</span>
-                  <input defaultValue={emailLink?.value ?? ""} readOnly={!isEditing} required type="email" />
+                  <input
+                    defaultValue={emailLink?.value ?? ""}
+                    name="email"
+                    readOnly={!isEditing}
+                    required
+                    type="email"
+                  />
                 </label>
                 <label className="realtor-field">
-                  <span>Business label</span>
-                  <input defaultValue={salesAgent.businessLabel} readOnly={!isEditing} required type="text" />
+                  <span>Professional title</span>
+                  <input
+                    defaultValue={salesAgent.title}
+                    name="title"
+                    readOnly={!isEditing}
+                    required
+                    type="text"
+                  />
                 </label>
               </div>
 
@@ -153,7 +243,13 @@ export function RealtorContactProfileEditor({ salesAgent }: RealtorContactProfil
                         <Icon aria-hidden="true" className="h-4 w-4" />
                         {field.label}
                       </span>
-                      <input defaultValue={field.value} readOnly={!isEditing} type="text" />
+                      <input
+                        defaultValue={field.value}
+                        name={field.name}
+                        placeholder="https://"
+                        readOnly={!isEditing}
+                        type="url"
+                      />
                     </label>
                   );
                 })}
@@ -169,16 +265,23 @@ export function RealtorContactProfileEditor({ salesAgent }: RealtorContactProfil
               <div className="realtor-field-grid">
                 <label className="realtor-field">
                   <span>Main header</span>
-                  <input defaultValue={salesAgent.headerMain} readOnly={!isEditing} required type="text" />
+                  <input
+                    defaultValue={salesAgent.headerMain}
+                    name="headerMain"
+                    readOnly={!isEditing}
+                    required
+                    type="text"
+                  />
                 </label>
                 <label className="realtor-field">
                   <span>Catalog slug</span>
-                  <input defaultValue={salesAgent.catalogSlug} readOnly={!isEditing} required type="text" />
+                  <input defaultValue={salesAgent.catalogSlug} readOnly required type="text" />
                 </label>
                 <label className="realtor-field">
                   <span>Main sub-header</span>
                   <input
                     defaultValue={salesAgent.headerPrimarySubheader}
+                    name="headerPrimarySubheader"
                     readOnly={!isEditing}
                     required
                     type="text"
@@ -188,6 +291,7 @@ export function RealtorContactProfileEditor({ salesAgent }: RealtorContactProfil
                   <span>Second sub-header</span>
                   <textarea
                     defaultValue={salesAgent.headerSecondarySubheader}
+                    name="headerSecondarySubheader"
                     readOnly={!isEditing}
                     required
                     rows={4}
@@ -204,7 +308,7 @@ export function RealtorContactProfileEditor({ salesAgent }: RealtorContactProfil
               </div>
             </section>
           </div>
-        </div>
+        </form>
       </section>
     </>
   );
