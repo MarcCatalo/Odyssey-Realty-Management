@@ -59,6 +59,7 @@ type ProjectRow = {
   levels: string | null;
   lot_size_range: string | null;
   completion_label: string | null;
+  features_amenities: string[];
   map_address: string | null;
   google_maps_url: string | null;
   total_site_area: string | null;
@@ -276,7 +277,7 @@ async function getCatalogForRealtor(realtorId: string, realtor: RealtorRow): Pro
       client
         .from("projects")
         .select(
-          "id,developer_id,title,slug,description,location,project_type,status_label,price_range,total_lots_available,levels,lot_size_range,completion_label,map_address,google_maps_url,total_site_area,road_reserve,common_zones,zoning,sdp_reference,publication_status"
+          "id,developer_id,title,slug,description,location,project_type,status_label,price_range,total_lots_available,levels,lot_size_range,completion_label,features_amenities,map_address,google_maps_url,total_site_area,road_reserve,common_zones,zoning,sdp_reference,publication_status"
         )
         .eq("realtor_id", realtorId)
         .neq("publication_status", "archived")
@@ -448,6 +449,7 @@ function mapProject(project: ProjectRow, media?: ProjectImage[]): Project {
     levels: project.levels ?? undefined,
     lotSizeRange: project.lot_size_range ?? undefined,
     completionLabel: project.completion_label ?? undefined,
+    featuresAmenities: project.features_amenities ?? [],
     mapAddress: project.map_address ?? undefined,
     totalSiteArea: project.total_site_area ?? undefined,
     roadReserve: project.road_reserve ?? undefined,

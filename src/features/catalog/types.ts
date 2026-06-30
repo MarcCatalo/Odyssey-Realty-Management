@@ -69,6 +69,7 @@ export type Project = {
   levels?: string;
   lotSizeRange?: string;
   completionLabel?: string;
+  featuresAmenities: string[];
   mapAddress?: string;
   totalSiteArea?: string;
   roadReserve?: string;

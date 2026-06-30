@@ -145,6 +145,12 @@ export const projects: Project[] = [
     levels: "2",
     lotSizeRange: "180-220 m²",
     completionLabel: "Q3 2026",
+    featuresAmenities: [
+      "Clubhouse",
+      "Landscaped open spaces",
+      "24/7 security",
+      "Children's play area"
+    ],
     mapAddress: "42 Greenridge Drive, Quezon City, Metro Manila",
     totalSiteArea: "6,240 m²",
     roadReserve: "Included",
@@ -225,6 +231,7 @@ export const projects: Project[] = [
     levels: "3",
     lotSizeRange: "96-140 m²",
     completionLabel: "Ready for viewing",
+    featuresAmenities: ["Gated entrance", "24/7 security", "Community open space"],
     mapAddress: "18 Northline Avenue, Caloocan, Metro Manila",
     totalSiteArea: "3,480 m²",
     roadReserve: "Included",

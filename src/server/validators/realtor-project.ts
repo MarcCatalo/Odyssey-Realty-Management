@@ -8,6 +8,12 @@ const optionalText = (max = 180) =>
     .optional()
     .transform((value) => (value ? value : null));
 
+const featuresAmenities = z
+  .array(z.string().trim().max(120))
+  .max(30)
+  .default([])
+  .transform((items) => items.filter(Boolean));
+
 export const createProjectSchema = z.object({
   developerSlug: z.string().trim().min(1).max(120),
   title: z.string().trim().min(2).max(160),
@@ -20,6 +26,7 @@ export const createProjectSchema = z.object({
   levels: optionalText(80),
   lotSizeRange: optionalText(120),
   completionLabel: optionalText(120),
+  featuresAmenities,
   mapAddress: optionalText(240),
   googleMapsUrl: optionalText(500),
   totalSiteArea: optionalText(120),
