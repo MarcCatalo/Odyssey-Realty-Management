@@ -3333,6 +3333,15 @@ svg {
     cursor: default;
   }
 
+  .realtor-check-row:has(input:disabled) {
+    cursor: not-allowed;
+    opacity: 0.58;
+  }
+
+  .realtor-check-row input:disabled {
+    cursor: not-allowed;
+  }
+
   .realtor-field textarea {
     min-height: 10rem;
     resize: vertical;

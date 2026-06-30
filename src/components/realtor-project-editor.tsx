@@ -299,6 +299,7 @@ export function RealtorProjectEditor({ developer, developers, project }: Realtor
 
             <RealtorPublishingControls
               defaultPublished={project.publicationStatus === "published"}
+              disabled={!isEditing}
               draftLabel="Keep as draft"
               inputName="publicationStatus"
               publishedLabel="Published on public catalog"

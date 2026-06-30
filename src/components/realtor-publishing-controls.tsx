@@ -4,6 +4,7 @@ import { useState } from "react";
 
 type RealtorPublishingControlsProps = {
   defaultPublished?: boolean;
+  disabled?: boolean;
   draftLabel?: string;
   inputName?: string;
   publishedLabel?: string;
@@ -11,6 +12,7 @@ type RealtorPublishingControlsProps = {
 
 export function RealtorPublishingControls({
   defaultPublished = false,
+  disabled = false,
   draftLabel = "Save as draft after creation",
   inputName,
   publishedLabel = "Published on public catalog"
@@ -26,6 +28,7 @@ export function RealtorPublishingControls({
       <label className="realtor-check-row">
         <input
           checked={saveAsDraft}
+          disabled={disabled}
           onChange={(event) => {
             const checked = event.target.checked;
             if (!checked && !isPublished) {
@@ -42,6 +45,7 @@ export function RealtorPublishingControls({
       <label className="realtor-check-row">
         <input
           checked={isPublished}
+          disabled={disabled}
           onChange={(event) => {
             const checked = event.target.checked;
             if (!checked && !saveAsDraft) {
