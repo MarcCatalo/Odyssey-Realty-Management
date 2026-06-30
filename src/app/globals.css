@@ -1605,10 +1605,20 @@ svg {
   }
 
   .project-gallery-expanded-image {
-    aspect-ratio: 16 / 9;
     background: theme("colors.grove");
+    height: min(72vh, 48rem);
     min-height: 0;
+    overflow: hidden;
     position: relative;
+    width: 100%;
+  }
+
+  .project-gallery-expanded-image img {
+    height: 100%;
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+    width: 100%;
   }
 
   .project-gallery-empty {
@@ -3959,15 +3969,18 @@ svg {
   }
 
   .realtor-manager-photo-image {
-    background: theme("colors.grove");
+    background: theme("colors.bone");
     border-bottom: 3px solid theme("colors.canopy");
     min-height: 13.75rem;
+    overflow: hidden;
     position: relative;
   }
 
   .realtor-manager-photo-image img {
     height: 100%;
-    object-fit: cover;
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
     width: 100%;
   }
 
@@ -4461,6 +4474,10 @@ svg {
   }
 
   @media (max-width: 639px) {
+    .project-gallery-expanded-image {
+      height: min(62vh, 34rem);
+    }
+
     .realtor-amenity-row {
       align-items: stretch;
       grid-template-columns: 1fr;

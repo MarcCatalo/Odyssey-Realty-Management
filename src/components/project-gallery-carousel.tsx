@@ -107,7 +107,7 @@ export function ProjectGalleryCarousel({ images }: { images: ProjectImage[] }) {
         <div className="project-gallery-expanded-image">
           <Image
             alt={selectedImage.alt}
-            className="object-cover"
+            className="object-contain"
             fill
             sizes="(min-width: 1024px) 76vw, 92vw"
             src={selectedImage.src}

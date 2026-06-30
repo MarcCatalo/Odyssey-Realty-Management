@@ -327,6 +327,7 @@ export function RealtorImageUpload({
                       <div className="realtor-manager-photo-image">
                         <Image
                           alt={image.alt}
+                          className="object-contain"
                           fill
                           onError={(event) => {
                             event.currentTarget.style.opacity = "0";
