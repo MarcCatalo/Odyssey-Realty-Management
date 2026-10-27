@@ -92,7 +92,7 @@ export function CatalogShell({
             <Link className="font-display text-lg font-black" href="/">
               MERIDIAN
             </Link>
-            <details className="relative">
+            <details className="relative" key={pathname}>
               <summary className="brutal-button flex cursor-pointer list-none items-center gap-2 px-3 py-2 text-xs">
                 <Menu aria-hidden="true" className="h-4 w-4" />
                 Menu

@@ -67,7 +67,7 @@ export function RealtorShell({ children }: RealtorShellProps) {
           <Link className="font-display text-lg font-black uppercase" href="/realtor">
             Meridian CMS
           </Link>
-          <details className="relative">
+          <details className="relative" key={pathname}>
             <summary className="brutal-button flex cursor-pointer list-none items-center gap-2 px-3 py-2 text-xs uppercase">
               <Menu aria-hidden="true" className="h-4 w-4" />
               Menu
